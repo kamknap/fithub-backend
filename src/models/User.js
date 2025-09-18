@@ -9,7 +9,7 @@ firebaseUid: { type: String, default: null }
 },
 profile: {
 sex: { type: String, enum: ['Male', 'Female', 'Other', 'PreferNotToSay'], required: true },
-age: { type: Number, required: true, min: 0 },
+birthDate: { type: Date, required: true},
 heightCm: { type: Number, required: true, min: 0 },
 weightKg: { type: Number, required: true, min: 0 }
 },

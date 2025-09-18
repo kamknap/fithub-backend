@@ -17,8 +17,8 @@ if (!username || !profile || !settings) {
 return res.status(400).json({ message: 'username, profile i settings są wymagane' });
 }
 
-if (!profile.sex || profile.age == null || profile.heightCm == null || profile.weightKg == null) {
-return res.status(400).json({ message: 'profile.sex, profile.age, profile.heightCm, profile.weightKg są wymagane' });
+if (!profile.sex || profile.birthDate == null || profile.heightCm == null || profile.weightKg == null) {
+return res.status(400).json({ message: 'profile.sex, profile.birthDate, profile.heightCm, profile.weightKg są wymagane' });
 }
 
 if (settings.activityLevel == null || settings.preferredTrainingFrequencyPerWeek == null) {
