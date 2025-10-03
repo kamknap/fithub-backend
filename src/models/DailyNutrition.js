@@ -7,7 +7,6 @@ const foodItemSchema = new mongoose.Schema({
 
 const mealSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  time: { type: String, required: true },
   foods: [foodItemSchema]
 });
 
@@ -16,12 +15,9 @@ const dailyNutritionSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   meals: [mealSchema],
   dailyTotals: {
-    calories: { type: Number, default: 0 },
-    protein: { type: Number, default: 0 },
-    fat: { type: Number, default: 0 },
-    carbs: { type: Number, default: 0 }
+    calorieGoal: { type: Number, required: true },
+    calorieEaten: { type: Number, default: 0 }
   },
-  calorieGoal: { type: Number, required: true },
   notes: { type: String, default: null }
 }, { timestamps: true });
 

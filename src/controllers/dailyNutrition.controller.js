@@ -19,8 +19,7 @@ export async function getDailyNutrition(req, res, next) {
         userId,
         date,
         meals: [],
-        dailyTotals: { calories: 0, protein: 0, fat: 0, carbs: 0 },
-        calorieGoal,
+        dailyTotals: { calorieGoal, calorieEaten: 0 },
         notes: null
       });
     }
@@ -35,8 +34,8 @@ export async function addMeal(req, res, next) {
     const { userId, date } = req.params;
     const { meal } = req.body;
 
-    // Oblicz wartości odżywcze dla posiłku
-    const mealTotals = await calculateMealNutrition(meal.foods);
+    // Oblicz kalorie dla posiłku
+    const mealCalories = await calculateMealCalories(meal.foods);
 
     // Pobierz lub stwórz dziennik na dany dzień
     let nutrition = await DailyNutrition.findOne({ userId, date });
@@ -49,8 +48,7 @@ export async function addMeal(req, res, next) {
         userId,
         date,
         meals: [],
-        dailyTotals: { calories: 0, protein: 0, fat: 0, carbs: 0 },
-        calorieGoal
+        dailyTotals: { calorieGoal, calorieEaten: 0 }
       });
     }
 
@@ -58,10 +56,7 @@ export async function addMeal(req, res, next) {
     nutrition.meals.push(meal);
     
     // Aktualizuj dzienne sumy
-    nutrition.dailyTotals.calories += mealTotals.calories;
-    nutrition.dailyTotals.protein += mealTotals.protein;
-    nutrition.dailyTotals.fat += mealTotals.fat;
-    nutrition.dailyTotals.carbs += mealTotals.carbs;
+    nutrition.dailyTotals.calorieEaten += mealCalories;
 
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
@@ -84,18 +79,15 @@ export async function deleteMeal(req, res, next) {
       return res.status(404).json({ message: 'Posiłek nie został znaleziony' });
     }
 
-    // Oblicz wartości do odjęcia
+    // Oblicz kalorie do odjęcia
     const mealToDelete = nutrition.meals[mealIndex];
-    const mealTotals = await calculateMealNutrition(mealToDelete.foods);
+    const mealCalories = await calculateMealCalories(mealToDelete.foods);
 
     // Usuń posiłek
     nutrition.meals.splice(mealIndex, 1);
     
     // Aktualizuj dzienne sumy
-    nutrition.dailyTotals.calories -= mealTotals.calories;
-    nutrition.dailyTotals.protein -= mealTotals.protein;
-    nutrition.dailyTotals.fat -= mealTotals.fat;
-    nutrition.dailyTotals.carbs -= mealTotals.carbs;
+    nutrition.dailyTotals.calorieEaten -= mealCalories;
 
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
@@ -104,25 +96,17 @@ export async function deleteMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// Funkcja pomocnicza do obliczania wartości odżywczych posiłku
-async function calculateMealNutrition(foods) {
-  let totals = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+// Funkcja pomocnicza do obliczania kalorii posiłku
+async function calculateMealCalories(foods) {
+  let totalCalories = 0;
 
   for (const foodItem of foods) {
     const food = await Food.findById(foodItem.foodId);
     if (food) {
       const multiplier = foodItem.quantity / 100; // quantity w gramach, nutrition na 100g
-      totals.calories += food.nutritionPer100g.calories * multiplier;
-      totals.protein += food.nutritionPer100g.protein * multiplier;
-      totals.fat += food.nutritionPer100g.fat * multiplier;
-      totals.carbs += food.nutritionPer100g.carbs * multiplier;
+      totalCalories += food.nutritionPer100g.calories * multiplier;
     }
   }
 
-  return {
-    calories: Math.round(totals.calories * 10) / 10,
-    protein: Math.round(totals.protein * 10) / 10,
-    fat: Math.round(totals.fat * 10) / 10,
-    carbs: Math.round(totals.carbs * 10) / 10
-  };
+  return Math.round(totalCalories * 10) / 10;
 }
