@@ -96,17 +96,65 @@ export async function deleteMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
+// DELETE /api/nutrition/:userId/:date/meal/:mealIndex/food/:foodIndex
+export async function deleteFoodFromMeal(req, res, next) {
+  try {
+    const { userId, date, mealIndex, foodIndex } = req.params;
+    
+    const nutrition = await DailyNutrition.findOne({ userId, date });
+    if (!nutrition) {
+      return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
+    }
+
+    if (mealIndex >= nutrition.meals.length) {
+      return res.status(404).json({ message: 'Posiłek nie został znaleziony' });
+    }
+
+    const meal = nutrition.meals[mealIndex];
+    if (foodIndex >= meal.foods.length) {
+      return res.status(404).json({ message: 'Pozycja jedzenia nie została znaleziona' });
+    }
+
+    // Oblicz kalorie pozycji do usunięcia
+    const foodToDelete = meal.foods[foodIndex];
+    const foodCalories = await calculateFoodItemCalories(foodToDelete);
+
+    // Usuń pozycję jedzenia z posiłku
+    meal.foods.splice(foodIndex, 1);
+    
+    // Jeśli posiłek jest pusty, usuń go całkowicie
+    if (meal.foods.length === 0) {
+      nutrition.meals.splice(mealIndex, 1);
+    }
+    
+    // Aktualizuj dzienne sumy
+    nutrition.dailyTotals.calorieEaten -= foodCalories;
+
+    await nutrition.save();
+    await nutrition.populate('meals.foods.foodId');
+    
+    res.json(nutrition);
+  } catch (e) { next(e); }
+}
+
 // Funkcja pomocnicza do obliczania kalorii posiłku
 async function calculateMealCalories(foods) {
   let totalCalories = 0;
 
   for (const foodItem of foods) {
-    const food = await Food.findById(foodItem.foodId);
-    if (food) {
-      const multiplier = foodItem.quantity / 100; // quantity w gramach, nutrition na 100g
-      totalCalories += food.nutritionPer100g.calories * multiplier;
-    }
+    const calories = await calculateFoodItemCalories(foodItem);
+    totalCalories += calories;
   }
 
   return Math.round(totalCalories * 10) / 10;
+}
+
+// Funkcja pomocnicza do obliczania kalorii pojedynczej pozycji jedzenia
+async function calculateFoodItemCalories(foodItem) {
+  const food = await Food.findById(foodItem.foodId);
+  if (food) {
+    const multiplier = foodItem.quantity / 100; // quantity w gramach, nutrition na 100g
+    return food.nutritionPer100g.calories * multiplier;
+  }
+  return 0;
 }
