@@ -4,7 +4,7 @@ const foodItemSchema = new mongoose.Schema({
   itemId: { type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
   foodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Food', required: true },
   quantity: { type: Number, required: true }
-});
+}, { _id: false });
 
 const mealSchema = new mongoose.Schema({
   name: { type: String, required: true },
