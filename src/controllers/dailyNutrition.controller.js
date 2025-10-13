@@ -137,6 +137,55 @@ export async function deleteFoodFromMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
+export async function deleteFoodByItemId(req, res, next) {
+  try {
+    const { userId, date, itemId } = req.params;
+    
+    const nutrition = await DailyNutrition.findOne({ userId, date });
+    if (!nutrition) {
+      return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
+    }
+
+    let foodFound = false;
+    let foodCalories = 0;
+
+    // Znajdź i usuń pozycję jedzenia po itemId
+    for (let mealIndex = 0; mealIndex < nutrition.meals.length; mealIndex++) {
+      const meal = nutrition.meals[mealIndex];
+      const foodIndex = meal.foods.findIndex(food => food.itemId.toString() === itemId);
+      
+      if (foodIndex !== -1) {
+        // Oblicz kalorie pozycji do usunięcia
+        const foodToDelete = meal.foods[foodIndex];
+        foodCalories = await calculateFoodItemCalories(foodToDelete);
+
+        // Usuń pozycję jedzenia z posiłku
+        meal.foods.splice(foodIndex, 1);
+        
+        // Jeśli posiłek jest pusty, usuń go całkowicie
+        if (meal.foods.length === 0) {
+          nutrition.meals.splice(mealIndex, 1);
+        }
+        
+        foodFound = true;
+        break;
+      }
+    }
+
+    if (!foodFound) {
+      return res.status(404).json({ message: 'Pozycja jedzenia nie została znaleziona' });
+    }
+    
+    // Aktualizuj dzienne sumy
+    nutrition.dailyTotals.calorieEaten -= foodCalories;
+
+    await nutrition.save();
+    await nutrition.populate('meals.foods.foodId');
+    
+    res.json(nutrition);
+  } catch (e) { next(e); }
+}
+
 // Funkcja pomocnicza do obliczania kalorii posiłku
 async function calculateMealCalories(foods) {
   let totalCalories = 0;

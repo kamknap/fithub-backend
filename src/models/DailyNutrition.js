@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 
 const foodItemSchema = new mongoose.Schema({
+  itemId: { type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
   foodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Food', required: true },
-  quantity: { type: Number, required: true } // w gramach
+  quantity: { type: Number, required: true }
 });
 
 const mealSchema = new mongoose.Schema({
