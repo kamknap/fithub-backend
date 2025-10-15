@@ -7,8 +7,14 @@ export async function listFoods(req, res, next) {
     let query = {};
 
     if (search) {
-      query = { $text: { $search: search } };
+      query = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { brand: { $regex: search, $options: 'i' } }
+        ]
+      };
     }
+    
     if (category && category !== 'all') {
       query.category = category;
     }
