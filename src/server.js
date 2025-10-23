@@ -17,7 +17,9 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'http://10.0.2.2:3000',
-    'http://10.0.2.2:5173'
+    'http://10.0.2.2:5173',
+    'http://192.168.1.28:3000',
+    'http://192.168.1.28:5173'
   ],
   credentials: true,
 }));
@@ -41,7 +43,13 @@ app.use((err, _req, res, _next) => {
 
 // Start
 connectDB(process.env.MONGODB_URI)
-  .then(() => app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`)))
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {  // ← ZMIANA: dodaj '0.0.0.0'
+      console.log(`API listening on:`);
+      console.log(`  - http://localhost:${PORT}`);
+      console.log(`  - http://192.168.1.28:${PORT}`);  // ← Twój lokalny IP
+    });
+  })
   .catch((err) => {
     console.error('DB connection failed:', err);
     process.exit(1);
