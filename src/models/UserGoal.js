@@ -4,6 +4,7 @@ const userGoalSchema = new mongoose.Schema(
 {
 userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 type: { type: String, enum: ['lose_weight', 'gain_weight', 'maintain'], required: true },
+firstWeightKg: { type: Number, required: true, min: 0 },
 targetWeightKg: { type: Number, required: true, min: 0 },
 plan: {
 trainingFrequencyPerWeek: { type: Number, required: true, min: 1, max: 7 },
