@@ -8,6 +8,7 @@ import userGoalsRouter from './routes/userGoals.routes.js';
 import foodsRouter from './routes/foods.routes.js';
 import nutritionRouter from './routes/dailyNutrition.routes.js';
 import weightHistoryRouter from './routes/userWeightHistory.routes.js';
+import exercisesRouter from './routes/exercises.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -36,6 +37,7 @@ app.use('/api/user-goals', userGoalsRouter);
 app.use('/api/foods', foodsRouter); 
 app.use('/api/nutrition', nutritionRouter);
 app.use('/api/weight-history', weightHistoryRouter); 
+app.use('/api/exercises', exercisesRouter); 
 
 // Global error handler
 app.use((err, _req, res, _next) => {
