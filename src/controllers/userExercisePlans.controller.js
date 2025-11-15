@@ -55,6 +55,18 @@ export async function createUserExercisePlan(req, res, next) {
       });
     }
 
+    // Sprawdź czy użytkownik już ma plan o takiej nazwie (case-insensitive)
+    const existingPlan = await UserExercisePlan.findOne({
+      user_id,
+      plan_name: { $regex: `^${plan_name}$`, $options: 'i' }
+    });
+
+    if (existingPlan) {
+      return res.status(409).json({ 
+        message: 'Masz już plan treningowy o takiej nazwie' 
+      });
+    }
+
     const plan = await UserExercisePlan.create({ 
       user_id, 
       plan_name, 
@@ -76,6 +88,28 @@ export async function updateUserExercisePlan(req, res, next) {
   try {
     const { id } = req.params;
     const { plan_name, plan_exercises } = req.body;
+
+    // Jeśli zmienia się nazwa, sprawdź czy użytkownik nie ma już planu o takiej nazwie
+    if (plan_name !== undefined) {
+      const currentPlan = await UserExercisePlan.findById(id);
+      
+      if (!currentPlan) {
+        return res.status(404).json({ message: 'Plan treningowy nie został znaleziony' });
+      }
+
+      // Sprawdź czy istnieje inny plan użytkownika o takiej nazwie (case-insensitive)
+      const existingPlan = await UserExercisePlan.findOne({
+        _id: { $ne: id }, // inny niż aktualnie edytowany
+        user_id: currentPlan.user_id,
+        plan_name: { $regex: `^${plan_name}$`, $options: 'i' }
+      });
+
+      if (existingPlan) {
+        return res.status(409).json({ 
+          message: 'Masz już plan treningowy o takiej nazwie' 
+        });
+      }
+    }
 
     const updateData = {};
     if (plan_name !== undefined) updateData.plan_name = plan_name;
