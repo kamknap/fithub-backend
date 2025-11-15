@@ -1,14 +1,20 @@
 import { Exercise } from '../models/Exercise.js';
 
-// GET /api/exercises → lista wszystkich ćwiczeń lub wyszukiwanie po nazwie
+// GET /api/exercises → lista wszystkich ćwiczeń lub wyszukiwanie po nazwie i/lub muscleId
 export async function listExercises(req, res, next) {
   try {
-    const { name } = req.query;
+    const { name, muscleId } = req.query;
     
-    // Jeśli podano parametr name, wyszukaj ćwiczenia zawierające tę nazwę
     let query = {};
+    
+    // Wyszukiwanie po nazwie (case-insensitive)
     if (name) {
-      query.name = { $regex: name, $options: 'i' }; // case-insensitive search
+      query.name = { $regex: name, $options: 'i' };
+    }
+    
+    // Wyszukiwanie po muscleId (sprawdza czy zawiera dany muscleId w tablicy)
+    if (muscleId) {
+      query.muscleIds = muscleId;
     }
     
     const exercises = await Exercise.find(query).sort({ name: 1 });
