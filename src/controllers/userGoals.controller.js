@@ -62,3 +62,67 @@ export async function getUserGoalsByUserId(req, res, next) {
     res.json(userGoals);
   } catch (e) { next(e); }
 }
+
+// GET /api/user-goals/:id → pobierz konkretny cel po ID
+export async function getUserGoalById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userGoal = await UserGoal.findById(id).populate('userId');
+    
+    if (!userGoal) {
+      return res.status(404).json({ message: 'Cel użytkownika nie został znaleziony' });
+    }
+    
+    res.json(userGoal);
+  } catch (e) { 
+    next(e); 
+  }
+}
+
+// PUT /api/user-goals/:id → aktualizuj cel użytkownika
+export async function updateUserGoal(req, res, next) {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const userGoal = await UserGoal.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true, runValidators: true }
+    ).populate('userId');
+
+    if (!userGoal) {
+      return res.status(404).json({ message: 'Cel użytkownika nie został znaleziony' });
+    }
+
+    // Jeśli zmieniono status na active, zaktualizuj currentGoalId użytkownika
+    if (updateData.status === 'active') {
+      await User.findByIdAndUpdate(userGoal.userId._id, { currentGoalId: userGoal._id });
+    }
+
+    res.json(userGoal);
+  } catch (e) {
+    next(e);
+  }
+}
+
+// DELETE /api/user-goals/:id → usuń cel użytkownika
+export async function deleteUserGoal(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userGoal = await UserGoal.findByIdAndDelete(id);
+
+    if (!userGoal) {
+      return res.status(404).json({ message: 'Cel użytkownika nie został znaleziony' });
+    }
+
+    // Jeśli usuwany cel był aktywny, usuń currentGoalId z użytkownika
+    if (userGoal.status === 'active') {
+      await User.findByIdAndUpdate(userGoal.userId, { currentGoalId: null });
+    }
+
+    res.json({ message: 'Cel użytkownika został usunięty', userGoal });
+  } catch (e) {
+    next(e);
+  }
+}
