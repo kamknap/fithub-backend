@@ -10,6 +10,10 @@ import nutritionRouter from './routes/dailyNutrition.routes.js';
 import weightHistoryRouter from './routes/userWeightHistory.routes.js';
 import exercisesRouter from './routes/exercises.routes.js';
 import userExercisePlansRouter from './routes/userExercisePlans.routes.js';
+import userProgressRouter from './routes/userProgress.routes.js';
+import photosRouter from './routes/photos.routes.js';
+import badgesRouter from './routes/badges.routes.js';
+import challengesRouter from './routes/challenges.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -39,7 +43,11 @@ app.use('/api/foods', foodsRouter);
 app.use('/api/nutrition', nutritionRouter);
 app.use('/api/weight-history', weightHistoryRouter); 
 app.use('/api/exercises', exercisesRouter); 
-app.use('/api/user-exercise-plans', userExercisePlansRouter); 
+app.use('/api/user-exercise-plans', userExercisePlansRouter);
+app.use('/api/user-progress', userProgressRouter);
+app.use('/api/photos', photosRouter);
+app.use('/api/badges', badgesRouter);
+app.use('/api/challenges', challengesRouter); 
 
 // Global error handler
 app.use((err, _req, res, _next) => {

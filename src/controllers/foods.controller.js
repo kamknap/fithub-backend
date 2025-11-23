@@ -1,4 +1,5 @@
 import { Food } from '../models/Foods.js';
+import mongoose from 'mongoose';
 
 // GET /api/foods - lista produktów z wyszukiwaniem
 export async function listFoods(req, res, next) {
@@ -34,6 +35,12 @@ export async function listFoods(req, res, next) {
 export async function getFoodById(req, res, next) {
   try {
     const { id } = req.params;
+    
+    // Sprawdź czy ID jest poprawnym ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
+    }
+    
     const food = await Food.findById(id);
     
     if (!food) {
@@ -77,6 +84,11 @@ export async function updateFood(req, res, next) {
     const { id } = req.params;
     const updateData = req.body;
 
+    // Sprawdź czy ID jest poprawnym ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
+    }
+
     const food = await Food.findByIdAndUpdate(id, updateData, { new: true });
     
     if (!food) {
@@ -91,6 +103,12 @@ export async function updateFood(req, res, next) {
 export async function deleteFood(req, res, next) {
   try {
     const { id } = req.params;
+    
+    // Sprawdź czy ID jest poprawnym ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
+    }
+    
     const food = await Food.findByIdAndDelete(id);
     
     if (!food) {
