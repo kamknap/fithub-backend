@@ -75,7 +75,6 @@ export async function updateUserProgress(req, res, next) {
     const { userId } = req.params;
     const updateData = req.body;
 
-    // ✅ Jeśli activeChallenges to pusty obiekt, zamień na null
     if (updateData.activeChallenges !== undefined) {
       if (updateData.activeChallenges === null) {
         // OK - null jest dozwolony
@@ -83,7 +82,7 @@ export async function updateUserProgress(req, res, next) {
         // Sprawdź czy obiekt jest pusty lub nie ma challengeId
         if (!updateData.activeChallenges.challengeId || 
             Object.keys(updateData.activeChallenges).length === 0) {
-          updateData.activeChallenges = null; // ✅ Zamień na null
+          updateData.activeChallenges = null;
         }
       }
     }
