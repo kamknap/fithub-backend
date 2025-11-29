@@ -8,7 +8,7 @@ const badgeSchema = new mongoose.Schema(
     type: { 
       type: String, 
       required: true,
-      enum: ['STREAK', 'MEAL_COUNT', 'WEIGHT_LOSS', 'TRAINING_COUNT']
+      enum: ['STREAK', 'MEAL_COUNT', 'WEIGHT_LOSS', 'TRAINING_COUNT', 'TRAINING_PLAN_COUNT']
     }
   },
   { timestamps: true }
