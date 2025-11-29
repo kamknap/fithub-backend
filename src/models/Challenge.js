@@ -4,8 +4,13 @@ const challengeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     desc: { type: String, required: true },
-    durationDays: { type: Number, required: true, min: 1 },
-    pointsForComplete: { type: Number, required: true, min: 0 }
+    pointsForComplete: { type: Number, required: true, min: 0 },
+    type: { 
+      type: String, 
+      required: true,
+      enum: ['STREAK', 'MEAL_COUNT', 'WEIGHT_LOSS', 'TRAINING_COUNT']
+    },
+    targetValue: { type: Number, required: true, min: 1 }
   },
   { timestamps: true }
 );

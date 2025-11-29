@@ -5,7 +5,11 @@ const badgeSchema = new mongoose.Schema(
     name: { type: String, required: true },
     desc: { type: String, required: true },
     iconUrl: { type: String, required: true },
-    unlockedAt: { type: Date, default: null }
+    type: { 
+      type: String, 
+      required: true,
+      enum: ['STREAK', 'MEAL_COUNT', 'WEIGHT_LOSS', 'TRAINING_COUNT']
+    }
   },
   { timestamps: true }
 );

@@ -75,13 +75,24 @@ export async function updateUserProgress(req, res, next) {
     const { userId } = req.params;
     const updateData = req.body;
 
-    // Sprawdź czy użytkownik istnieje
+    // ✅ Jeśli activeChallenges to pusty obiekt, zamień na null
+    if (updateData.activeChallenges !== undefined) {
+      if (updateData.activeChallenges === null) {
+        // OK - null jest dozwolony
+      } else if (typeof updateData.activeChallenges === 'object') {
+        // Sprawdź czy obiekt jest pusty lub nie ma challengeId
+        if (!updateData.activeChallenges.challengeId || 
+            Object.keys(updateData.activeChallenges).length === 0) {
+          updateData.activeChallenges = null; // ✅ Zamień na null
+        }
+      }
+    }
+
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    // Zaktualizuj postęp
     const progress = await UserProgress.findOneAndUpdate(
       { userId },
       updateData,

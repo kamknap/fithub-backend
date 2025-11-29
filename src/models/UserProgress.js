@@ -12,10 +12,13 @@ const userProgressSchema = new mongoose.Schema(
     badges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Badge' }],
     completedChallenges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' }],
     activeChallenges: {
-      challengeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Challenge', default: null },
-      counter: { type: Number, default: 0, min: 0 },
-      totalToFinish: { type: Number, default: 0, min: 0 },
-      startedDate: { type: Date, default: null }
+      type: {
+        challengeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Challenge', required: true },
+        counter: { type: Number, default: 0, min: 0 },
+        totalToFinish: { type: Number, default: 0, min: 0 },
+        startedDate: { type: Date, default: null }
+      },
+      default: null
     },
     motivationNotifications: {
       enabled: { type: Boolean, default: true },
