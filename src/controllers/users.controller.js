@@ -61,11 +61,41 @@ next(e);
 }
 }
 
+// Funkcja pomocnicza do usuwania pól z null/undefined
+function removeNullUndefined(obj) {
+  if (obj === null || obj === undefined || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj;
+  }
+
+  const cleaned = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== null && value !== undefined) {
+      // Rekurencyjnie oczyść zagnieżdżone obiekty
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        const cleanedNested = removeNullUndefined(value);
+        // Dodaj tylko jeśli zagnieżdżony obiekt ma jakieś pola
+        if (Object.keys(cleanedNested).length > 0) {
+          cleaned[key] = cleanedNested;
+        }
+      } else {
+        cleaned[key] = value;
+      }
+    }
+  }
+  return cleaned;
+}
+
 // PUT /api/users/:id → aktualizuj użytkownika
 export async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    
+    // Usuń pola z null/undefined przed aktualizacją
+    const updateData = removeNullUndefined(req.body);
 
     // Sprawdź czy użytkownik istnieje
     const existingUser = await User.findById(id);

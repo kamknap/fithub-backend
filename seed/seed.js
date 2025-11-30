@@ -20,8 +20,7 @@ settings: {
 activityLevel: 3,
 notifications: {
 enabled: true,
-types: { workoutReminders: true, mealReminders: false, measureReminders: true },
-channels: { push: true, email: false }
+types: { workoutReminders: true, mealReminders: false, measureReminders: true }
 },
 preferredTrainingFrequencyPerWeek: 3
 }
@@ -35,8 +34,7 @@ settings: {
 activityLevel: 2,
 notifications: {
 enabled: true,
-types: { workoutReminders: true, mealReminders: true, measureReminders: true },
-channels: { push: true, email: false }
+types: { workoutReminders: true, mealReminders: true, measureReminders: true }
 },
 preferredTrainingFrequencyPerWeek: 4
 }
@@ -50,8 +48,7 @@ settings: {
 activityLevel: 4,
 notifications: {
 enabled: false,
-types: { workoutReminders: false, mealReminders: false, measureReminders: false },
-channels: { push: false, email: false }
+types: { workoutReminders: false, mealReminders: false, measureReminders: false }
 },
 preferredTrainingFrequencyPerWeek: 5
 }

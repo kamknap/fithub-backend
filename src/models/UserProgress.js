@@ -20,13 +20,6 @@ const userProgressSchema = new mongoose.Schema(
       },
       default: null
     },
-    motivationNotifications: {
-      enabled: { type: Boolean, default: true },
-      achivementAlerts: { type: Boolean, default: true },
-      dailyReminder: { type: Boolean, default: true },
-      quotes: { type: Boolean, default: true },
-      reminderTime: { type: String, default: '09:00' }
-    },
     statistics: {
       totalMealsLogged: { type: Number, default: 0, min: 0 },
       totalExercisesCompleted: { type: Number, default: 0, min: 0 },

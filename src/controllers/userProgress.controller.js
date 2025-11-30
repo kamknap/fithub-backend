@@ -28,7 +28,7 @@ export async function getUserProgress(req, res, next) {
 // POST /api/user-progress → utwórz nowy postęp użytkownika
 export async function createUserProgress(req, res, next) {
   try {
-    const { userId, level, currentPoints, totalPoints, pointsToNextLevel, lastLoginDate, loginStreak, badges, completedChallenges, activeChallenges, motivationNotifications, statistics, photos } = req.body;
+    const { userId, level, currentPoints, totalPoints, pointsToNextLevel, lastLoginDate, loginStreak, badges, completedChallenges, activeChallenges, statistics, photos } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: 'userId jest wymagane' });
@@ -58,7 +58,6 @@ export async function createUserProgress(req, res, next) {
       badges,
       completedChallenges,
       activeChallenges,
-      motivationNotifications,
       statistics,
       photos
     });
