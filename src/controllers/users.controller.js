@@ -22,6 +22,20 @@ export async function getUserById(req, res, next) {
   } catch (e) { next(e); }
 }
 
+// GET /api/users/firebase/:firebaseUid → pobierz użytkownika po Firebase UID
+export async function getUserByFirebaseUid(req, res, next) {
+  try {
+    const { firebaseUid } = req.params;
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    res.json(user);
+  } catch (e) { next(e); }
+}
+
 // POST /api/users → dodaj użytkownika
 export async function createUser(req, res, next) {
 try {
