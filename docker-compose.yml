@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  fithub-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fithub-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MONGODB_URI=${MONGODB_URI}
+      - NODE_ENV=production
+      # Dodaj inne zmienne środowiskowe według potrzeb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - fithub-network
+
+networks:
+  fithub-network:
+    driver: bridge

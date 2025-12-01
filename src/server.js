@@ -18,15 +18,22 @@ import challengesRouter from './routes/challenges.routes.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://10.0.2.2:3000',
+  'http://10.0.2.2:5173',
+  'http://192.168.1.28:3000',
+  'http://192.168.1.28:5173'
+];
+
+if (process.env.ALLOWED_ORIGINS) {
+  const productionOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+  allowedOrigins.push(...productionOrigins);
+}
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://10.0.2.2:3000',
-    'http://10.0.2.2:5173',
-    'http://192.168.1.28:3000',
-    'http://192.168.1.28:5173'
-  ],
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(morgan('dev'));
