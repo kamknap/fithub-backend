@@ -18,7 +18,6 @@ const foodSchema = new mongoose.Schema({
   addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 }, { timestamps: true });
 
-// Indeksy dla wyszukiwania
 foodSchema.index({ name: 'text', brand: 'text' });
 foodSchema.index({ barcode: 1 });
 
