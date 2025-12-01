@@ -9,10 +9,10 @@ import {
 
 const router = Router();
 
-router.get('/', listExercises);           // GET /api/exercises lub /api/exercises?name=pompki&muscleId=biceps
-router.get('/:id', getExerciseById);      // GET /api/exercises/:id
-router.post('/', createExercise);         // POST /api/exercises
-router.put('/:id', updateExercise);       // PUT /api/exercises/:id
-router.delete('/:id', deleteExercise);    // DELETE /api/exercises/:id
+router.get('/', listExercises);
+router.get('/:id', getExerciseById);
+router.post('/', createExercise);
+router.put('/:id', updateExercise);
+router.delete('/:id', deleteExercise);
 
 export default router;

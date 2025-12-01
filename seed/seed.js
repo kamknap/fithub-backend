@@ -6,7 +6,6 @@ import { UserGoal } from '../src/models/UserGoal.js';
 async function run() {
 await connectDB(process.env.MONGODB_URI);
 
-// Usuń istniejące dane
 await User.deleteMany({});
 await UserGoal.deleteMany({});
 
@@ -55,14 +54,12 @@ preferredTrainingFrequencyPerWeek: 5
 }
 ];
 
-// Dodaj użytkowników
 const createdUsers = [];
 for (const u of userData) {
 const user = await User.create(u);
 createdUsers.push(user);
 }
 
-// Dodaj przykładowe cele
 const goalData = [
 {
 userId: createdUsers[0]._id,
@@ -108,7 +105,6 @@ const goal = await UserGoal.create(g);
 createdGoals.push(goal);
 }
 
-// Zaktualizuj currentGoalId dla użytkowników
 for (let i = 0; i < createdUsers.length; i++) {
 await User.findByIdAndUpdate(createdUsers[i]._id, { currentGoalId: createdGoals[i]._id });
 }

@@ -12,7 +12,6 @@ const exerciseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indeks do szybszego wyszukiwania po nazwie
 exerciseSchema.index({ name: 1 });
 
 export const Exercise = mongoose.model('Exercise', exerciseSchema, 'exercises');

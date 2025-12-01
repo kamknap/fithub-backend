@@ -1,7 +1,6 @@
 import { Food } from '../models/Foods.js';
 import mongoose from 'mongoose';
 
-// GET /api/foods - lista produktów z wyszukiwaniem
 export async function listFoods(req, res, next) {
   try {
     const { search, category, limit = 20, skip = 0 } = req.query;
@@ -31,12 +30,10 @@ export async function listFoods(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// GET /api/foods/:id - szczegóły produktu
 export async function getFoodById(req, res, next) {
   try {
     const { id } = req.params;
     
-    // Sprawdź czy ID jest poprawnym ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
     }
@@ -51,7 +48,6 @@ export async function getFoodById(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// POST /api/foods - dodaj produkt
 export async function createFood(req, res, next) {
   try {
     const { name, brand, barcode, nutritionPer100g, category, addedBy } = req.body;
@@ -78,13 +74,11 @@ export async function createFood(req, res, next) {
   }
 }
 
-// PUT /api/foods/:id - aktualizuj produkt
 export async function updateFood(req, res, next) {
   try {
     const { id } = req.params;
     const updateData = req.body;
 
-    // Sprawdź czy ID jest poprawnym ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
     }
@@ -99,12 +93,10 @@ export async function updateFood(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// DELETE /api/foods/:id - usuń produkt
 export async function deleteFood(req, res, next) {
   try {
     const { id } = req.params;
     
-    // Sprawdź czy ID jest poprawnym ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Nieprawidłowy format ID produktu' });
     }
@@ -119,7 +111,6 @@ export async function deleteFood(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// GET /api/foods/barcode/:barcode - znajdź po kodzie kreskowym
 export async function getFoodByBarcode(req, res, next) {
   try {
     const { barcode } = req.params;

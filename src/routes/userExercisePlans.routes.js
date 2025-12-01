@@ -11,15 +11,13 @@ import {
 
 const router = Router();
 
-// Operacje na planach
-router.get('/', getUserExercisePlans);                     // GET /api/user-exercise-plans?user_id=xxx
-router.get('/:id', getUserExercisePlanById);               // GET /api/user-exercise-plans/:id
-router.post('/', createUserExercisePlan);                  // POST /api/user-exercise-plans
-router.put('/:id', updateUserExercisePlan);                // PUT /api/user-exercise-plans/:id
-router.delete('/:id', deleteUserExercisePlan);             // DELETE /api/user-exercise-plans/:id
+router.get('/', getUserExercisePlans);
+router.get('/:id', getUserExercisePlanById);
+router.post('/', createUserExercisePlan);
+router.put('/:id', updateUserExercisePlan);
+router.delete('/:id', deleteUserExercisePlan);
 
-// Operacje na ćwiczeniach w planie
-router.post('/:id/exercises', addExerciseToPlan);          // POST /api/user-exercise-plans/:id/exercises
-router.delete('/:id/exercises/:exercise_id', removeExerciseFromPlan);  // DELETE /api/user-exercise-plans/:id/exercises/:exercise_id
+router.post('/:id/exercises', addExerciseToPlan);
+router.delete('/:id/exercises/:exercise_id', removeExerciseFromPlan);
 
 export default router;

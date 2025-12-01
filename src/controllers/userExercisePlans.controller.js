@@ -1,6 +1,5 @@
 import { UserExercisePlan } from '../models/UserExercisePlan.js';
 
-// GET /api/user-exercise-plans?user_id=xxx → pobierz wszystkie plany użytkownika
 export async function getUserExercisePlans(req, res, next) {
   try {
     const { user_id } = req.query;
@@ -19,7 +18,6 @@ export async function getUserExercisePlans(req, res, next) {
   }
 }
 
-// GET /api/user-exercise-plans/:id → pobierz konkretny plan po ID
 export async function getUserExercisePlanById(req, res, next) {
   try {
     const { id } = req.params;
@@ -36,26 +34,22 @@ export async function getUserExercisePlanById(req, res, next) {
   }
 }
 
-// POST /api/user-exercise-plans → dodaj nowy plan treningowy
 export async function createUserExercisePlan(req, res, next) {
   try {
     const { user_id, plan_name, plan_exercises } = req.body;
 
-    // Walidacja wymaganych pól
     if (!user_id || !plan_name) {
       return res.status(400).json({ 
         message: 'user_id i plan_name są wymagane' 
       });
     }
 
-    // Walidacja plan_exercises jeśli został podany
     if (plan_exercises && !Array.isArray(plan_exercises)) {
       return res.status(400).json({ 
         message: 'plan_exercises musi być tablicą' 
       });
     }
 
-    // Sprawdź czy użytkownik już ma plan o takiej nazwie (case-insensitive)
     const existingPlan = await UserExercisePlan.findOne({
       user_id,
       plan_name: { $regex: `^${plan_name}$`, $options: 'i' }
@@ -73,7 +67,6 @@ export async function createUserExercisePlan(req, res, next) {
       plan_exercises: plan_exercises || []
     });
 
-    // Pobierz plan z wypełnionymi danymi ćwiczeń
     const populatedPlan = await UserExercisePlan.findById(plan._id)
       .populate('plan_exercises.exercise_id');
 
@@ -83,13 +76,11 @@ export async function createUserExercisePlan(req, res, next) {
   }
 }
 
-// PUT /api/user-exercise-plans/:id → zaktualizuj plan treningowy
 export async function updateUserExercisePlan(req, res, next) {
   try {
     const { id } = req.params;
     const { plan_name, plan_exercises } = req.body;
 
-    // Jeśli zmienia się nazwa, sprawdź czy użytkownik nie ma już planu o takiej nazwie
     if (plan_name !== undefined) {
       const currentPlan = await UserExercisePlan.findById(id);
       
@@ -97,9 +88,8 @@ export async function updateUserExercisePlan(req, res, next) {
         return res.status(404).json({ message: 'Plan treningowy nie został znaleziony' });
       }
 
-      // Sprawdź czy istnieje inny plan użytkownika o takiej nazwie (case-insensitive)
       const existingPlan = await UserExercisePlan.findOne({
-        _id: { $ne: id }, // inny niż aktualnie edytowany
+        _id: { $ne: id },
         user_id: currentPlan.user_id,
         plan_name: { $regex: `^${plan_name}$`, $options: 'i' }
       });
@@ -131,7 +121,6 @@ export async function updateUserExercisePlan(req, res, next) {
   }
 }
 
-// DELETE /api/user-exercise-plans/:id → usuń cały plan treningowy
 export async function deleteUserExercisePlan(req, res, next) {
   try {
     const { id } = req.params;
@@ -147,7 +136,6 @@ export async function deleteUserExercisePlan(req, res, next) {
   }
 }
 
-// POST /api/user-exercise-plans/:id/exercises → dodaj ćwiczenie do planu
 export async function addExerciseToPlan(req, res, next) {
   try {
     const { id } = req.params;
@@ -169,7 +157,6 @@ export async function addExerciseToPlan(req, res, next) {
     console.log('addExerciseToPlan - found plan:', plan._id);
     console.log('addExerciseToPlan - current exercises:', plan.plan_exercises);
 
-    // Sprawdź czy ćwiczenie już istnieje w planie
     const exerciseExists = plan.plan_exercises.some(
       ex => ex.exercise_id.toString() === exercise_id.toString()
     );
@@ -178,14 +165,12 @@ export async function addExerciseToPlan(req, res, next) {
       return res.status(400).json({ message: 'To ćwiczenie już istnieje w planie' });
     }
 
-    // Dodaj ćwiczenie
     plan.plan_exercises.push({ exercise_id });
     console.log('addExerciseToPlan - after push:', plan.plan_exercises);
     
     await plan.save();
     console.log('addExerciseToPlan - saved successfully');
 
-    // Pobierz zaktualizowany plan z wypełnionymi danymi
     const updatedPlan = await UserExercisePlan.findById(id)
       .populate('plan_exercises.exercise_id');
 
@@ -197,7 +182,6 @@ export async function addExerciseToPlan(req, res, next) {
   }
 }
 
-// DELETE /api/user-exercise-plans/:id/exercises/:exercise_id → usuń ćwiczenie z planu
 export async function removeExerciseFromPlan(req, res, next) {
   try {
     const { id, exercise_id } = req.params;
@@ -208,7 +192,6 @@ export async function removeExerciseFromPlan(req, res, next) {
       return res.status(404).json({ message: 'Plan treningowy nie został znaleziony' });
     }
 
-    // Znajdź indeks ćwiczenia w tablicy
     const exerciseIndex = plan.plan_exercises.findIndex(
       ex => ex.exercise_id.toString() === exercise_id
     );
@@ -217,11 +200,9 @@ export async function removeExerciseFromPlan(req, res, next) {
       return res.status(404).json({ message: 'Ćwiczenie nie zostało znalezione w planie' });
     }
 
-    // Usuń ćwiczenie
     plan.plan_exercises.splice(exerciseIndex, 1);
     await plan.save();
 
-    // Pobierz zaktualizowany plan z wypełnionymi danymi
     const updatedPlan = await UserExercisePlan.findById(id)
       .populate('plan_exercises.exercise_id');
 

@@ -10,11 +10,11 @@ import {
 
 const router = Router();
 
-router.get('/', listUserGoals);                        // GET /api/user-goals
-router.post('/', createUserGoal);                      // POST /api/user-goals
-router.get('/user/:userId', getUserGoalsByUserId);     // GET /api/user-goals/user/:userId
-router.get('/:id', getUserGoalById);                   // GET /api/user-goals/:id
-router.put('/:id', updateUserGoal);                    // PUT /api/user-goals/:id
-router.delete('/:id', deleteUserGoal);                 // DELETE /api/user-goals/:id
+router.get('/', listUserGoals);
+router.post('/', createUserGoal);
+router.get('/user/:userId', getUserGoalsByUserId);
+router.get('/:id', getUserGoalById);
+router.put('/:id', updateUserGoal);
+router.delete('/:id', deleteUserGoal);
 
 export default router;

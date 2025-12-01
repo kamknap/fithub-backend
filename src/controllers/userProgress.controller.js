@@ -1,18 +1,15 @@
 import { UserProgress } from '../models/UserProgress.js';
 import { User } from '../models/User.js';
 
-// GET /api/user-progress/:userId → pobierz postęp użytkownika
 export async function getUserProgress(req, res, next) {
   try {
     const { userId } = req.params;
 
-    // Sprawdź czy użytkownik istnieje
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    // Pobierz postęp użytkownika
     const progress = await UserProgress.findOne({ userId });
 
     if (!progress) {
@@ -25,7 +22,6 @@ export async function getUserProgress(req, res, next) {
   }
 }
 
-// POST /api/user-progress → utwórz nowy postęp użytkownika
 export async function createUserProgress(req, res, next) {
   try {
     const { userId, level, currentPoints, totalPoints, pointsToNextLevel, lastLoginDate, loginStreak, badges, completedChallenges, activeChallenges, statistics, photos } = req.body;
@@ -34,19 +30,16 @@ export async function createUserProgress(req, res, next) {
       return res.status(400).json({ message: 'userId jest wymagane' });
     }
 
-    // Sprawdź czy użytkownik istnieje
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie istnieje' });
     }
 
-    // Sprawdź czy postęp już istnieje dla tego użytkownika
     const existingProgress = await UserProgress.findOne({ userId });
     if (existingProgress) {
       return res.status(409).json({ message: 'Postęp dla tego użytkownika już istnieje' });
     }
 
-    // Utwórz nowy postęp
     const progress = await UserProgress.create({
       userId,
       level,
@@ -68,7 +61,6 @@ export async function createUserProgress(req, res, next) {
   }
 }
 
-// PUT /api/user-progress/:userId → zaktualizuj postęp użytkownika
 export async function updateUserProgress(req, res, next) {
   try {
     const { userId } = req.params;
@@ -76,9 +68,7 @@ export async function updateUserProgress(req, res, next) {
 
     if (updateData.activeChallenges !== undefined) {
       if (updateData.activeChallenges === null) {
-        // OK - null jest dozwolony
       } else if (typeof updateData.activeChallenges === 'object') {
-        // Sprawdź czy obiekt jest pusty lub nie ma challengeId
         if (!updateData.activeChallenges.challengeId || 
             Object.keys(updateData.activeChallenges).length === 0) {
           updateData.activeChallenges = null;
@@ -107,7 +97,6 @@ export async function updateUserProgress(req, res, next) {
   }
 }
 
-// DELETE /api/user-progress/:userId → usuń postęp użytkownika
 export async function deleteUserProgress(req, res, next) {
   try {
     const { userId } = req.params;

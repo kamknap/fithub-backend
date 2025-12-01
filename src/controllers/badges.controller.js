@@ -1,6 +1,5 @@
 import { Badge } from '../models/Badge.js';
 
-// GET /api/badges → lista wszystkich odznak
 export async function listBadges(req, res, next) {
   try {
     const badges = await Badge.find().sort({ createdAt: -1 });
@@ -10,7 +9,6 @@ export async function listBadges(req, res, next) {
   }
 }
 
-// GET /api/badges/:id → pobierz odznakę po ID
 export async function getBadgeById(req, res, next) {
   try {
     const { id } = req.params;

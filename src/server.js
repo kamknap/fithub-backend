@@ -18,7 +18,6 @@ import challengesRouter from './routes/challenges.routes.js';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middlewares
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -33,10 +32,8 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Healthcheck
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
-// Routes
 app.use('/api/users', usersRouter);
 app.use('/api/user-goals', userGoalsRouter);
 app.use('/api/foods', foodsRouter); 
@@ -49,19 +46,17 @@ app.use('/api/photos', photosRouter);
 app.use('/api/badges', badgesRouter);
 app.use('/api/challenges', challengesRouter); 
 
-// Global error handler
 app.use((err, _req, res, _next) => {
   console.error('[error]', err);
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// Start
 connectDB(process.env.MONGODB_URI)
   .then(() => {
-    app.listen(PORT, '0.0.0.0', () => {  // ← ZMIANA: dodaj '0.0.0.0'
+    app.listen(PORT, '0.0.0.0', () => { 
       console.log(`API listening on:`);
       console.log(`  - http://localhost:${PORT}`);
-      console.log(`  - http://192.168.1.28:${PORT}`);  // ← Twój lokalny IP
+      console.log(`  - http://192.168.1.28:${PORT}`);
     });
   })
   .catch((err) => {

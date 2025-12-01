@@ -1,6 +1,5 @@
 import { Challenge } from '../models/Challenge.js';
 
-// GET /api/challenges → lista wszystkich wyzwań
 export async function listChallenges(req, res, next) {
   try {
     const challenges = await Challenge.find().sort({ createdAt: -1 });
@@ -10,7 +9,6 @@ export async function listChallenges(req, res, next) {
   }
 }
 
-// GET /api/challenges/:id → pobierz wyzwanie po ID
 export async function getChallengeById(req, res, next) {
   try {
     const { id } = req.params;

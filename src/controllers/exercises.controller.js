@@ -1,18 +1,15 @@
 import { Exercise } from '../models/Exercise.js';
 
-// GET /api/exercises → lista wszystkich ćwiczeń lub wyszukiwanie po nazwie i/lub muscleId
 export async function listExercises(req, res, next) {
   try {
     const { name, muscleId } = req.query;
     
     let query = {};
     
-    // Wyszukiwanie po nazwie (case-insensitive)
     if (name) {
       query.name = { $regex: name, $options: 'i' };
     }
     
-    // Wyszukiwanie po muscleId (sprawdza czy zawiera dany muscleId w tablicy)
     if (muscleId) {
       query.muscleIds = muscleId;
     }
@@ -24,7 +21,6 @@ export async function listExercises(req, res, next) {
   }
 }
 
-// GET /api/exercises/:id → pobierz ćwiczenie po ID
 export async function getExerciseById(req, res, next) {
   try {
     const { id } = req.params;
@@ -40,19 +36,16 @@ export async function getExerciseById(req, res, next) {
   }
 }
 
-// POST /api/exercises → dodaj nowe ćwiczenie
 export async function createExercise(req, res, next) {
   try {
     const { name, muscleIds, desc, instructions, videoUrl, METS } = req.body;
 
-    // Walidacja wymaganych pól
     if (!name || !muscleIds || !desc || !instructions || METS == null) {
       return res.status(400).json({ 
         message: 'name, muscleIds, desc, instructions i METS są wymagane' 
       });
     }
 
-    // Walidacja typów
     if (!Array.isArray(muscleIds) || muscleIds.length === 0) {
       return res.status(400).json({ 
         message: 'muscleIds musi być niepustą tablicą' 
@@ -86,7 +79,6 @@ export async function createExercise(req, res, next) {
   }
 }
 
-// PUT /api/exercises/:id → aktualizuj ćwiczenie
 export async function updateExercise(req, res, next) {
   try {
     const { id } = req.params;
@@ -107,7 +99,6 @@ export async function updateExercise(req, res, next) {
   }
 }
 
-// DELETE /api/exercises/:id → usuń ćwiczenie
 export async function deleteExercise(req, res, next) {
   try {
     const { id } = req.params;

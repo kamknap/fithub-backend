@@ -25,7 +25,6 @@ const userExercisePlanSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indeks do szybszego wyszukiwania po user_id
 userExercisePlanSchema.index({ user_id: 1 });
 
 export const UserExercisePlan = mongoose.model('UserExercisePlan', userExercisePlanSchema, 'user_exercise_plans');

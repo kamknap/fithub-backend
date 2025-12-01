@@ -2,7 +2,6 @@ import { DailyNutrition } from '../models/DailyNutrition.js';
 import { Food } from '../models/Foods.js';
 import { UserGoal } from '../models/UserGoal.js';
 
-// GET /api/nutrition/:userId/:date
 export async function getDailyNutrition(req, res, next) {
   try {
     const { userId, date } = req.params;
@@ -11,7 +10,6 @@ export async function getDailyNutrition(req, res, next) {
       .populate('meals.foods.foodId');
     
     if (!nutrition) {
-      // Pobierz cel kaloryczny z aktywnego celu użytkownika
       const activeGoal = await UserGoal.findOne({ userId, status: 'active' });
       const calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
       
@@ -28,16 +26,13 @@ export async function getDailyNutrition(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// POST /api/nutrition/:userId/:date/meal
 export async function addMeal(req, res, next) {
   try {
     const { userId, date } = req.params;
     const { meal } = req.body;
 
-    // Oblicz kalorie dla posiłku
     const mealCalories = await calculateMealCalories(meal.foods);
 
-    // Pobierz lub stwórz dziennik na dany dzień
     let nutrition = await DailyNutrition.findOne({ userId, date });
     
     if (!nutrition) {
@@ -52,10 +47,8 @@ export async function addMeal(req, res, next) {
       });
     }
 
-    // Dodaj posiłek
     nutrition.meals.push(meal);
     
-    // Aktualizuj dzienne sumy
     nutrition.dailyTotals.calorieEaten += mealCalories;
 
     await nutrition.save();
@@ -65,7 +58,6 @@ export async function addMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// DELETE /api/nutrition/:userId/:date/meal/:mealIndex
 export async function deleteMeal(req, res, next) {
   try {
     const { userId, date, mealIndex } = req.params;
@@ -79,14 +71,11 @@ export async function deleteMeal(req, res, next) {
       return res.status(404).json({ message: 'Posiłek nie został znaleziony' });
     }
 
-    // Oblicz kalorie do odjęcia
     const mealToDelete = nutrition.meals[mealIndex];
     const mealCalories = await calculateMealCalories(mealToDelete.foods);
 
-    // Usuń posiłek
     nutrition.meals.splice(mealIndex, 1);
     
-    // Aktualizuj dzienne sumy
     nutrition.dailyTotals.calorieEaten -= mealCalories;
 
     await nutrition.save();
@@ -96,7 +85,6 @@ export async function deleteMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// DELETE /api/nutrition/:userId/:date/meal/:mealIndex/food/:foodIndex
 export async function deleteFoodFromMeal(req, res, next) {
   try {
     const { userId, date, mealIndex, foodIndex } = req.params;
@@ -115,19 +103,15 @@ export async function deleteFoodFromMeal(req, res, next) {
       return res.status(404).json({ message: 'Pozycja jedzenia nie została znaleziona' });
     }
 
-    // Oblicz kalorie pozycji do usunięcia
     const foodToDelete = meal.foods[foodIndex];
     const foodCalories = await calculateFoodItemCalories(foodToDelete);
 
-    // Usuń pozycję jedzenia z posiłku
     meal.foods.splice(foodIndex, 1);
     
-    // Jeśli posiłek jest pusty, usuń go całkowicie
     if (meal.foods.length === 0) {
       nutrition.meals.splice(mealIndex, 1);
     }
     
-    // Aktualizuj dzienne sumy
     nutrition.dailyTotals.calorieEaten -= foodCalories;
 
     await nutrition.save();
@@ -149,20 +133,16 @@ export async function deleteFoodByItemId(req, res, next) {
     let foodFound = false;
     let foodCalories = 0;
 
-    // Znajdź i usuń pozycję jedzenia po itemId
     for (let mealIndex = 0; mealIndex < nutrition.meals.length; mealIndex++) {
       const meal = nutrition.meals[mealIndex];
       const foodIndex = meal.foods.findIndex(food => food.itemId.toString() === itemId);
       
       if (foodIndex !== -1) {
-        // Oblicz kalorie pozycji do usunięcia
         const foodToDelete = meal.foods[foodIndex];
         foodCalories = await calculateFoodItemCalories(foodToDelete);
 
-        // Usuń pozycję jedzenia z posiłku
         meal.foods.splice(foodIndex, 1);
         
-        // Jeśli posiłek jest pusty, usuń go całkowicie
         if (meal.foods.length === 0) {
           nutrition.meals.splice(mealIndex, 1);
         }
@@ -176,7 +156,6 @@ export async function deleteFoodByItemId(req, res, next) {
       return res.status(404).json({ message: 'Pozycja jedzenia nie została znaleziona' });
     }
     
-    // Aktualizuj dzienne sumy
     nutrition.dailyTotals.calorieEaten -= foodCalories;
 
     await nutrition.save();
@@ -186,7 +165,6 @@ export async function deleteFoodByItemId(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// PUT /api/nutrition/:userId/:date/food/:itemId - edytuj quantity pozycji jedzenia
 export async function updateFoodQuantity(req, res, next) {
   try {
     const { userId, date, itemId } = req.params;
@@ -205,7 +183,6 @@ export async function updateFoodQuantity(req, res, next) {
     let oldCalories = 0;
     let newCalories = 0;
 
-    // Znajdź pozycję jedzenia po itemId i zaktualizuj quantity
     for (let mealIndex = 0; mealIndex < nutrition.meals.length; mealIndex++) {
       const meal = nutrition.meals[mealIndex];
       const foodIndex = meal.foods.findIndex(food => food.itemId.toString() === itemId);
@@ -213,13 +190,10 @@ export async function updateFoodQuantity(req, res, next) {
       if (foodIndex !== -1) {
         const foodItem = meal.foods[foodIndex];
         
-        // Oblicz stare kalorie
         oldCalories = await calculateFoodItemCalories(foodItem);
         
-        // Zaktualizuj quantity
         foodItem.quantity = quantity;
         
-        // Oblicz nowe kalorie
         newCalories = await calculateFoodItemCalories(foodItem);
         
         foodFound = true;
@@ -231,7 +205,6 @@ export async function updateFoodQuantity(req, res, next) {
       return res.status(404).json({ message: 'Pozycja jedzenia nie została znaleziona' });
     }
     
-    // Aktualizuj dzienne sumy
     nutrition.dailyTotals.calorieEaten = nutrition.dailyTotals.calorieEaten - oldCalories + newCalories;
 
     await nutrition.save();
@@ -241,7 +214,6 @@ export async function updateFoodQuantity(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// Funkcja pomocnicza do obliczania kalorii posiłku
 async function calculateMealCalories(foods) {
   let totalCalories = 0;
 
@@ -253,11 +225,10 @@ async function calculateMealCalories(foods) {
   return Math.round(totalCalories * 10) / 10;
 }
 
-// Funkcja pomocnicza do obliczania kalorii pojedynczej pozycji jedzenia
 async function calculateFoodItemCalories(foodItem) {
   const food = await Food.findById(foodItem.foodId);
   if (food) {
-    const multiplier = foodItem.quantity / 100; // quantity w gramach, nutrition na 100g
+    const multiplier = foodItem.quantity / 100; // quantity w gramach (na 100)
     return food.nutritionPer100g.calories * multiplier;
   }
   return 0;

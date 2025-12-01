@@ -1,6 +1,5 @@
 import { Photo } from '../models/Photo.js';
 
-// GET /api/photos → lista wszystkich zdjęć
 export async function listPhotos(req, res, next) {
   try {
     const photos = await Photo.find().sort({ uploadedAt: -1 });
@@ -10,7 +9,6 @@ export async function listPhotos(req, res, next) {
   }
 }
 
-// GET /api/photos/:id → pobierz zdjęcie po ID
 export async function getPhotoById(req, res, next) {
   try {
     const { id } = req.params;
@@ -26,7 +24,6 @@ export async function getPhotoById(req, res, next) {
   }
 }
 
-// POST /api/photos → dodaj nowe zdjęcie
 export async function createPhoto(req, res, next) {
   try {
     const { photoUrl, uploadedAt, weightKg } = req.body;
@@ -37,7 +34,6 @@ export async function createPhoto(req, res, next) {
       });
     }
 
-    // Utwórz nowe zdjęcie
     const photo = await Photo.create({
       photoUrl,
       uploadedAt: uploadedAt ? new Date(uploadedAt) : new Date(),
@@ -50,13 +46,11 @@ export async function createPhoto(req, res, next) {
   }
 }
 
-// PUT /api/photos/:id → zaktualizuj zdjęcie
 export async function updatePhoto(req, res, next) {
   try {
     const { id } = req.params;
     const updateData = req.body;
 
-    // Zaktualizuj zdjęcie
     const photo = await Photo.findByIdAndUpdate(
       id,
       updateData,
@@ -73,7 +67,6 @@ export async function updatePhoto(req, res, next) {
   }
 }
 
-// DELETE /api/photos/:id → usuń zdjęcie
 export async function deletePhoto(req, res, next) {
   try {
     const { id } = req.params;

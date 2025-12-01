@@ -22,7 +22,6 @@ export async function getUserById(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// GET /api/users/firebase/:firebaseUid → pobierz użytkownika po Firebase UID
 export async function getUserByFirebaseUid(req, res, next) {
   try {
     const { firebaseUid } = req.params;
@@ -36,7 +35,6 @@ export async function getUserByFirebaseUid(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// POST /api/users → dodaj użytkownika
 export async function createUser(req, res, next) {
 try {
 const { username, auth, profile, computed, settings } = req.body;
@@ -61,7 +59,6 @@ computed: computed || {},
 settings 
 });
 
-// Automatycznie dodaj pierwszą wagę do historii
 await UserWeightHistory.create({
 userId: user._id,
 weightKg: profile.weightKg,
@@ -75,7 +72,6 @@ next(e);
 }
 }
 
-// Funkcja pomocnicza do usuwania pól z null/undefined
 function removeNullUndefined(obj) {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
     return obj;
@@ -88,10 +84,8 @@ function removeNullUndefined(obj) {
   const cleaned = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== null && value !== undefined) {
-      // Rekurencyjnie oczyść zagnieżdżone obiekty
       if (typeof value === 'object' && !Array.isArray(value)) {
         const cleanedNested = removeNullUndefined(value);
-        // Dodaj tylko jeśli zagnieżdżony obiekt ma jakieś pola
         if (Object.keys(cleanedNested).length > 0) {
           cleaned[key] = cleanedNested;
         }
@@ -103,28 +97,22 @@ function removeNullUndefined(obj) {
   return cleaned;
 }
 
-// PUT /api/users/:id → aktualizuj użytkownika
 export async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
     
-    // Usuń pola z null/undefined przed aktualizacją
     const updateData = removeNullUndefined(req.body);
 
-    // Sprawdź czy użytkownik istnieje
     const existingUser = await User.findById(id);
     if (!existingUser) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    // Sprawdź czy waga się zmieniła
     const weightChanged = updateData.profile?.weightKg && 
                          updateData.profile.weightKg !== existingUser.profile.weightKg;
 
-    // Zaktualizuj użytkownika
     const user = await User.findByIdAndUpdate(id, updateData, { new: true });
 
-    // Jeśli waga się zmieniła, dodaj nowy wpis do historii
     if (weightChanged) {
       await UserWeightHistory.create({
         userId: user._id,

@@ -9,7 +9,6 @@ const userWeightHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index dla szybkiego wyszukiwania po userId
 userWeightHistorySchema.index({ userId: 1, measuredAt: -1 });
 
 export const UserWeightHistory = mongoose.model('UserWeightHistory', userWeightHistorySchema, 'user_weight_history');
