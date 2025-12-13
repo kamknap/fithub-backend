@@ -1,16 +1,19 @@
 import { UserWeightHistory } from '../models/UserWeightHistory.js';
 import { User } from '../models/User.js';
+import { resolveUserId } from '../utils/idResolver.js';
 
 export async function getUserWeightHistory(req, res, next) {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId);
-    if (!user) {
+    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
+    const resolvedUserId = await resolveUserId(userId);
+    
+    if (!resolvedUserId) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    const weightHistory = await UserWeightHistory.find({ userId })
+    const weightHistory = await UserWeightHistory.find({ userId: resolvedUserId })
       .sort({ measuredAt: -1 });
 
     res.json(weightHistory);

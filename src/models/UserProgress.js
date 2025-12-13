@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const userProgressSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    userId: { type: String, required: true, unique: true },
     level: { type: Number, default: 1, min: 1 },
     currentPoints: { type: Number, default: 0, min: 0 },
     totalPoints: { type: Number, default: 0, min: 0 },

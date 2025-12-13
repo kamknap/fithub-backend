@@ -12,7 +12,19 @@ res.json(users);
 export async function getUserById(req, res, next) {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
+    
+    // Auto-detect: czy to MongoDB ObjectId (24 hex) czy Firebase UID
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
+    
+    let user;
+    
+    if (isMongoId) {
+      // MongoDB ObjectId - szukaj po _id
+      user = await User.findById(id);
+    } else {
+      // Firebase UID - szukaj po auth.firebaseUid
+      user = await User.findOne({ 'auth.firebaseUid': id });
+    }
     
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -103,7 +115,16 @@ export async function updateUser(req, res, next) {
     
     const updateData = removeNullUndefined(req.body);
 
-    const existingUser = await User.findById(id);
+    // Auto-detect: MongoDB ObjectId vs Firebase UID
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
+    
+    let existingUser;
+    if (isMongoId) {
+      existingUser = await User.findById(id);
+    } else {
+      existingUser = await User.findOne({ 'auth.firebaseUid': id });
+    }
+    
     if (!existingUser) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
@@ -111,7 +132,8 @@ export async function updateUser(req, res, next) {
     const weightChanged = updateData.profile?.weightKg && 
                          updateData.profile.weightKg !== existingUser.profile.weightKg;
 
-    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
+    // Update używając MongoDB _id (niezależnie od tego co przyszło w params)
+    const user = await User.findByIdAndUpdate(existingUser._id, updateData, { new: true });
 
     if (weightChanged) {
       await UserWeightHistory.create({

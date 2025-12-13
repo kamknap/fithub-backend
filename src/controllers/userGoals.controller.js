@@ -1,5 +1,6 @@
 import { UserGoal } from '../models/UserGoal.js';
 import { User } from '../models/User.js';
+import { resolveUserId } from '../utils/idResolver.js';
 
 function removeNullUndefined(obj) {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
@@ -76,7 +77,7 @@ export async function createUserGoal(req, res, next) {
 
 export async function getUserGoalsByUserId(req, res, next) {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params; // Już zresolved przez middleware
     const userGoals = await UserGoal.find({ userId }).sort({ createdAt: -1 });
     res.json(userGoals);
   } catch (e) { next(e); }

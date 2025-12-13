@@ -1,12 +1,20 @@
 import { DailyNutrition } from '../models/DailyNutrition.js';
 import { Food } from '../models/Foods.js';
 import { UserGoal } from '../models/UserGoal.js';
+import { resolveUserId } from '../utils/idResolver.js';
 
 export async function getDailyNutrition(req, res, next) {
   try {
     const { userId, date } = req.params;
     
-    const nutrition = await DailyNutrition.findOne({ userId, date })
+    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
+    const resolvedUserId = await resolveUserId(userId);
+    
+    if (!resolvedUserId) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    const nutrition = await DailyNutrition.findOne({ userId: resolvedUserId, date })
       .populate('meals.foods.foodId');
     
     if (!nutrition) {
@@ -33,7 +41,7 @@ export async function addMeal(req, res, next) {
 
     const mealCalories = await calculateMealCalories(meal.foods);
 
-    let nutrition = await DailyNutrition.findOne({ userId, date });
+    let nutrition = await DailyNutrition.findOne({ userId, date }); // userId już zresolved przez middleware
     
     if (!nutrition) {
       const activeGoal = await UserGoal.findOne({ userId, status: 'active' });

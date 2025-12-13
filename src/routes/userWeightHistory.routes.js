@@ -3,10 +3,13 @@ import {
   getUserWeightHistory, 
   createWeightMeasurement 
 } from '../controllers/userWeightHistory.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { autoResolveUserId } from '../middleware/userIdResolver.middleware.js';
 
 const router = Router();
 
-router.get('/:userId', getUserWeightHistory);
-router.post('/', createWeightMeasurement);
+// Wszystkie endpointy wymagają autentykacji + auto-resolve userId
+router.get('/:userId', verifyToken, autoResolveUserId, getUserWeightHistory);
+router.post('/', verifyToken, createWeightMeasurement);
 
 export default router;

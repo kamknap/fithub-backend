@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import { connectDB } from './db.js';
+import { initializeFirebaseAdmin } from './config/firebase.config.js';
 import usersRouter from './routes/users.routes.js';
 import userGoalsRouter from './routes/userGoals.routes.js';
 import foodsRouter from './routes/foods.routes.js';
@@ -14,6 +15,14 @@ import userProgressRouter from './routes/userProgress.routes.js';
 import photosRouter from './routes/photos.routes.js';
 import badgesRouter from './routes/badges.routes.js';
 import challengesRouter from './routes/challenges.routes.js';
+
+// Inicjalizacja Firebase Admin SDK
+try {
+  initializeFirebaseAdmin();
+} catch (error) {
+  console.error('[Server] Failed to initialize Firebase Admin:', error.message);
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;

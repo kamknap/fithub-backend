@@ -1,16 +1,19 @@
 import { UserProgress } from '../models/UserProgress.js';
 import { User } from '../models/User.js';
+import { resolveUserId } from '../utils/idResolver.js';
 
 export async function getUserProgress(req, res, next) {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId);
-    if (!user) {
+    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
+    const resolvedUserId = await resolveUserId(userId);
+    
+    if (!resolvedUserId) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    const progress = await UserProgress.findOne({ userId });
+    const progress = await UserProgress.findOne({ userId: resolvedUserId });
 
     if (!progress) {
       return res.status(404).json({ message: 'Postęp użytkownika nie został znaleziony' });
@@ -76,13 +79,15 @@ export async function updateUserProgress(req, res, next) {
       }
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
+    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
+    const resolvedUserId = await resolveUserId(userId);
+    
+    if (!resolvedUserId) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
     const progress = await UserProgress.findOneAndUpdate(
-      { userId },
+      { userId: resolvedUserId },
       updateData,
       { new: true, runValidators: true }
     );
@@ -101,7 +106,14 @@ export async function deleteUserProgress(req, res, next) {
   try {
     const { userId } = req.params;
 
-    const progress = await UserProgress.findOneAndDelete({ userId });
+    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
+    const resolvedUserId = await resolveUserId(userId);
+    
+    if (!resolvedUserId) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+
+    const progress = await UserProgress.findOneAndDelete({ userId: resolvedUserId });
 
     if (!progress) {
       return res.status(404).json({ message: 'Postęp użytkownika nie został znaleziony' });

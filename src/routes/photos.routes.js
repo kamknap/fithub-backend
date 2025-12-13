@@ -6,13 +6,15 @@ import {
   updatePhoto, 
   deletePhoto 
 } from '../controllers/photos.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-router.get('/', listPhotos);
-router.get('/:id', getPhotoById);
-router.post('/', createPhoto);
-router.put('/:id', updatePhoto);
-router.delete('/:id', deletePhoto);
+// Wszystkie endpointy wymagają autentykacji
+router.get('/', verifyToken, listPhotos);
+router.get('/:id', verifyToken, getPhotoById);
+router.post('/', verifyToken, createPhoto);
+router.put('/:id', verifyToken, updatePhoto);
+router.delete('/:id', verifyToken, deletePhoto);
 
 export default router;

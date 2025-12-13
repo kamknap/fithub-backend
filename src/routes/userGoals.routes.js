@@ -7,14 +7,17 @@ import {
   updateUserGoal,
   deleteUserGoal
 } from '../controllers/userGoals.controller.js';
+import { verifyToken } from '../middleware/auth.middleware.js';
+import { autoResolveUserId } from '../middleware/userIdResolver.middleware.js';
 
 const router = Router();
 
-router.get('/', listUserGoals);
-router.post('/', createUserGoal);
-router.get('/user/:userId', getUserGoalsByUserId);
-router.get('/:id', getUserGoalById);
-router.put('/:id', updateUserGoal);
-router.delete('/:id', deleteUserGoal);
+// Wszystkie endpointy wymagają autentykacji
+router.get('/', verifyToken, listUserGoals);
+router.post('/', verifyToken, createUserGoal);
+router.get('/user/:userId', verifyToken, autoResolveUserId, getUserGoalsByUserId);
+router.get('/:id', verifyToken, getUserGoalById);
+router.put('/:id', verifyToken, updateUserGoal);
+router.delete('/:id', verifyToken, deleteUserGoal);
 
 export default router;

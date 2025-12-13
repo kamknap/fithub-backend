@@ -12,7 +12,7 @@ const mealSchema = new mongoose.Schema({
 });
 
 const dailyNutritionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: String, required: true },
   date: { type: Date, required: true },
   meals: [mealSchema],
   dailyTotals: {

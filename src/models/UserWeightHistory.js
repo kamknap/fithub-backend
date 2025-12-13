@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const userWeightHistorySchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true },
     weightKg: { type: Number, required: true, min: 0 },
     measuredAt: { type: Date, required: true }
   },

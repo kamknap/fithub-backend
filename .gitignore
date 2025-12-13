@@ -12,6 +12,12 @@ pnpm-debug.log*
 .env.production
 .env.test
 
+# Firebase Service Account - NIGDY NIE COMMITOWAĆ!
+*serviceAccount*.json
+*firebase-adminsdk*.json
+firebase-key.json
+serviceAccountKey.json
+
 # Logs
 logs/
 *.log
@@ -47,3 +53,4 @@ build/
 
 # Docker (opcjonalnie, jeśli nie chcesz commitować)
 # docker-compose.override.yml
+.env
