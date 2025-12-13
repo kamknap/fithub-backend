@@ -33,6 +33,53 @@ export async function listUserGoals(req, res, next) {
   } catch (e) { next(e); }
 }
 
+// POST /api/user-goals/me - utworzenie celu dla zalogowanego użytkownika
+export async function createCurrentUserGoal(req, res, next) {
+  try {
+    const { type, targetWeightKg, plan, status, startedAt, notes } = req.body;
+
+    // BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+
+    if (!type || targetWeightKg == null || !plan || !startedAt) {
+      return res.status(400).json({ message: 'type, targetWeightKg, plan i startedAt są wymagane' });
+    }
+
+    if (!plan.trainingFrequencyPerWeek) {
+      return res.status(400).json({ message: 'plan.trainingFrequencyPerWeek jest wymagane' });
+    }
+
+    const firstWeightKg = user.profile.weightKg;
+
+    const userGoal = await UserGoal.create({ 
+      userId: user._id, 
+      type, 
+      firstWeightKg,
+      targetWeightKg, 
+      plan, 
+      status: status || 'active',
+      startedAt: new Date(startedAt),
+      notes 
+    });
+
+    if (userGoal.status === 'active') {
+      await User.findByIdAndUpdate(user._id, { currentGoalId: userGoal._id });
+    }
+
+    const populatedGoal = await UserGoal.findById(userGoal._id).populate('userId');
+    res.status(201).json(populatedGoal);
+  } catch (e) {
+    next(e);
+  }
+}
+
+// Stara funkcja (może być używana przez admina)
 export async function createUserGoal(req, res, next) {
   try {
     const { userId, type, targetWeightKg, plan, status, startedAt, notes } = req.body;

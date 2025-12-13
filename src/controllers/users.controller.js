@@ -1,5 +1,6 @@
 import { User } from '../models/User.js';
 import { UserWeightHistory } from '../models/UserWeightHistory.js';
+import { UserProgress } from '../models/UserProgress.js';
 
 // GET /api/users/me → dane zalogowanego użytkownika
 export async function getCurrentUser(req, res, next) {
@@ -33,6 +34,9 @@ export async function createUser(req, res, next) {
 try {
 const { username, auth, profile, computed, settings } = req.body;
 
+// BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu, nie z body
+const firebaseUidFromToken = req.user.uid;
+
 if (!username || !profile || !settings) {
 return res.status(400).json({ message: 'username, profile i settings są wymagane' });
 }
@@ -47,16 +51,44 @@ return res.status(400).json({ message: 'settings.activityLevel i settings.prefer
 
 const user = await User.create({ 
 username, 
-auth: auth || { provider: 'local', firebaseUid: null },
+// Nadpisz firebaseUid tym z tokenu (bezpieczne)
+auth: { 
+  ...(auth || {}), 
+  provider: auth?.provider || 'firebase', 
+  firebaseUid: firebaseUidFromToken 
+},
 profile, 
 computed: computed || {}, 
 settings 
 });
 
+// Automatyczne tworzenie początkowych dokumentów dla nowego użytkownika
 await UserWeightHistory.create({
 userId: user._id,
 weightKg: profile.weightKg,
 measuredAt: new Date()
+});
+
+// Tworzenie pustego dokumentu UserProgress z domyślnymi wartościami
+await UserProgress.create({
+userId: user._id,
+level: 1,
+currentPoints: 0,
+totalPoints: 0,
+pointsToNextLevel: 100,
+lastLoginDate: new Date(),
+loginStreak: 1,
+badges: [],
+completedChallenges: [],
+activeChallenges: null,
+statistics: {
+  totalMealsLogged: 0,
+  totalExercisesCompleted: 0,
+  totalWeightEntries: 1, // Mamy już jeden wpis wagi
+  longestStreak: 1,
+  weightChange: 0
+},
+photos: []
 });
 
 res.status(201).json(user);

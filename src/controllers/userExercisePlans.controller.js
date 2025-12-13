@@ -58,6 +58,59 @@ export async function getUserExercisePlanById(req, res, next) {
   }
 }
 
+// POST /api/user-exercise-plans/me - utworzenie planu dla zalogowanego użytkownika
+export async function createCurrentUserExercisePlan(req, res, next) {
+  try {
+    const { plan_name, plan_exercises } = req.body;
+
+    // BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+
+    if (!plan_name) {
+      return res.status(400).json({ 
+        message: 'plan_name jest wymagane' 
+      });
+    }
+
+    if (plan_exercises && !Array.isArray(plan_exercises)) {
+      return res.status(400).json({ 
+        message: 'plan_exercises musi być tablicą' 
+      });
+    }
+
+    const existingPlan = await UserExercisePlan.findOne({
+      user_id: user._id,
+      plan_name: { $regex: `^${plan_name}$`, $options: 'i' }
+    });
+
+    if (existingPlan) {
+      return res.status(409).json({ 
+        message: 'Masz już plan treningowy o takiej nazwie' 
+      });
+    }
+
+    const plan = await UserExercisePlan.create({ 
+      user_id: user._id, 
+      plan_name, 
+      plan_exercises: plan_exercises || []
+    });
+
+    const populatedPlan = await UserExercisePlan.findById(plan._id)
+      .populate('plan_exercises.exercise_id');
+
+    res.status(201).json(populatedPlan);
+  } catch (e) {
+    next(e);
+  }
+}
+
+// Stara funkcja (może być używana przez admina)
 export async function createUserExercisePlan(req, res, next) {
   try {
     const { user_id, plan_name, plan_exercises } = req.body;
