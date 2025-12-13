@@ -1,5 +1,29 @@
 import { UserExercisePlan } from '../models/UserExercisePlan.js';
+import { User } from '../models/User.js';
 
+// GET /api/user-exercise-plans/me - plany treningowe zalogowanego użytkownika
+export async function getCurrentUserExercisePlans(req, res, next) {
+  try {
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+
+    const plans = await UserExercisePlan.find({ user_id: user._id })
+      .populate('plan_exercises.exercise_id')
+      .sort({ createdAt: -1 });
+    
+    res.json(plans);
+  } catch (e) { 
+    next(e); 
+  }
+}
+
+// Stara funkcja (może być używana przez admina)
 export async function getUserExercisePlans(req, res, next) {
   try {
     const { user_id } = req.query;

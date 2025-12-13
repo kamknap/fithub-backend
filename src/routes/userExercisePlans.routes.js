@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { 
+  getCurrentUserExercisePlans,
   getUserExercisePlans, 
   getUserExercisePlanById,
   createUserExercisePlan, 
@@ -11,6 +12,9 @@ import {
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+// GET /api/user-exercise-plans/me - plany treningowe zalogowanego użytkownika
+router.get('/me', verifyToken, getCurrentUserExercisePlans);
 
 // Wszystkie endpointy wymagają autentykacji
 router.get('/', verifyToken, getUserExercisePlans);
