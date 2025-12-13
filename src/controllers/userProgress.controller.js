@@ -1,19 +1,19 @@
 import { UserProgress } from '../models/UserProgress.js';
 import { User } from '../models/User.js';
-import { resolveUserId } from '../utils/idResolver.js';
 
-export async function getUserProgress(req, res, next) {
+// GET /api/user-progress/me - postęp zalogowanego użytkownika
+export async function getCurrentUserProgress(req, res, next) {
   try {
-    const { userId } = req.params;
-
-    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
-    const resolvedUserId = await resolveUserId(userId);
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
     
-    if (!resolvedUserId) {
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    const progress = await UserProgress.findOne({ userId: resolvedUserId });
+    const progress = await UserProgress.findOne({ userId: user._id });
 
     if (!progress) {
       return res.status(404).json({ message: 'Postęp użytkownika nie został znaleziony' });
@@ -64,9 +64,9 @@ export async function createUserProgress(req, res, next) {
   }
 }
 
-export async function updateUserProgress(req, res, next) {
+// PUT /api/user-progress/me - aktualizacja postępu zalogowanego użytkownika
+export async function updateCurrentUserProgress(req, res, next) {
   try {
-    const { userId } = req.params;
     const updateData = req.body;
 
     if (updateData.activeChallenges !== undefined) {
@@ -79,15 +79,17 @@ export async function updateUserProgress(req, res, next) {
       }
     }
 
-    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
-    const resolvedUserId = await resolveUserId(userId);
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
     
-    if (!resolvedUserId) {
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
     const progress = await UserProgress.findOneAndUpdate(
-      { userId: resolvedUserId },
+      { userId: user._id },
       updateData,
       { new: true, runValidators: true }
     );
@@ -102,18 +104,19 @@ export async function updateUserProgress(req, res, next) {
   }
 }
 
-export async function deleteUserProgress(req, res, next) {
+// DELETE /api/user-progress/me - usunięcie postępu zalogowanego użytkownika
+export async function deleteCurrentUserProgress(req, res, next) {
   try {
-    const { userId } = req.params;
-
-    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
-    const resolvedUserId = await resolveUserId(userId);
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
     
-    if (!resolvedUserId) {
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
 
-    const progress = await UserProgress.findOneAndDelete({ userId: resolvedUserId });
+    const progress = await UserProgress.findOneAndDelete({ userId: user._id });
 
     if (!progress) {
       return res.status(404).json({ message: 'Postęp użytkownika nie został znaleziony' });

@@ -1,6 +1,23 @@
 import { User } from '../models/User.js';
 import { UserWeightHistory } from '../models/UserWeightHistory.js';
 
+// GET /api/users/me → dane zalogowanego użytkownika
+export async function getCurrentUser(req, res, next) {
+  try {
+    // req.user jest ustawiane przez verifyToken
+    const firebaseUid = req.user.uid;
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    res.json(user);
+  } catch (e) { 
+    next(e); 
+  }
+}
+
 // GET /api/users → lista użytkowników
 export async function listUsers(req, res, next) {
 try {
@@ -9,43 +26,8 @@ res.json(users);
 } catch (e) { next(e); }
 }
 
-export async function getUserById(req, res, next) {
-  try {
-    const { id } = req.params;
-    
-    // Auto-detect: czy to MongoDB ObjectId (24 hex) czy Firebase UID
-    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
-    
-    let user;
-    
-    if (isMongoId) {
-      // MongoDB ObjectId - szukaj po _id
-      user = await User.findById(id);
-    } else {
-      // Firebase UID - szukaj po auth.firebaseUid
-      user = await User.findOne({ 'auth.firebaseUid': id });
-    }
-    
-    if (!user) {
-      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
-    }
-    
-    res.json(user);
-  } catch (e) { next(e); }
-}
-
-export async function getUserByFirebaseUid(req, res, next) {
-  try {
-    const { firebaseUid } = req.params;
-    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
-    
-    if (!user) {
-      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
-    }
-    
-    res.json(user);
-  } catch (e) { next(e); }
-}
+// Funkcje getUserById i getUserByFirebaseUid zostały usunięte.
+// Zamiast nich używaj getCurrentUser() dla endpointu /me
 
 export async function createUser(req, res, next) {
 try {
@@ -109,21 +91,16 @@ function removeNullUndefined(obj) {
   return cleaned;
 }
 
-export async function updateUser(req, res, next) {
+// PUT /api/users/me → aktualizacja danych zalogowanego użytkownika
+export async function updateCurrentUser(req, res, next) {
   try {
-    const { id } = req.params;
+    // Pobierz Firebase UID z tokenu (ustalonego przez verifyToken)
+    const firebaseUid = req.user.uid;
     
     const updateData = removeNullUndefined(req.body);
-
-    // Auto-detect: MongoDB ObjectId vs Firebase UID
-    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
     
-    let existingUser;
-    if (isMongoId) {
-      existingUser = await User.findById(id);
-    } else {
-      existingUser = await User.findOne({ 'auth.firebaseUid': id });
-    }
+    // Znajdź użytkownika po Firebase UID
+    const existingUser = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     
     if (!existingUser) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -132,7 +109,7 @@ export async function updateUser(req, res, next) {
     const weightChanged = updateData.profile?.weightKg && 
                          updateData.profile.weightKg !== existingUser.profile.weightKg;
 
-    // Update używając MongoDB _id (niezależnie od tego co przyszło w params)
+    // Update używając MongoDB _id
     const user = await User.findByIdAndUpdate(existingUser._id, updateData, { new: true });
 
     if (weightChanged) {

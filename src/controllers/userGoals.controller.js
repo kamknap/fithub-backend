@@ -1,6 +1,5 @@
 import { UserGoal } from '../models/UserGoal.js';
 import { User } from '../models/User.js';
-import { resolveUserId } from '../utils/idResolver.js';
 
 function removeNullUndefined(obj) {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
@@ -75,10 +74,19 @@ export async function createUserGoal(req, res, next) {
   }
 }
 
-export async function getUserGoalsByUserId(req, res, next) {
+// GET /api/user-goals/me - cele zalogowanego użytkownika
+export async function getCurrentUserGoals(req, res, next) {
   try {
-    const { userId } = req.params; // Już zresolved przez middleware
-    const userGoals = await UserGoal.find({ userId }).sort({ createdAt: -1 });
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    const userGoals = await UserGoal.find({ userId: user._id }).sort({ createdAt: -1 });
     res.json(userGoals);
   } catch (e) { next(e); }
 }

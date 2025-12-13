@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import { 
-  getUserWeightHistory, 
+  getCurrentUserWeightHistory, 
   createWeightMeasurement 
 } from '../controllers/userWeightHistory.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
-import { autoResolveUserId } from '../middleware/userIdResolver.middleware.js';
 
 const router = Router();
 
-// Wszystkie endpointy wymagają autentykacji + auto-resolve userId
-router.get('/:userId', verifyToken, autoResolveUserId, getUserWeightHistory);
+// GET /api/user-weight-history/me - historia wagi zalogowanego użytkownika
+router.get('/me', verifyToken, getCurrentUserWeightHistory);
+
+// POST /api/user-weight-history - utworzenie pomiaru wagi
 router.post('/', verifyToken, createWeightMeasurement);
 
 export default router;

@@ -1,19 +1,24 @@
 import { Router } from 'express';
 import { 
-  getUserProgress, 
+  getCurrentUserProgress, 
   createUserProgress, 
-  updateUserProgress, 
-  deleteUserProgress 
+  updateCurrentUserProgress, 
+  deleteCurrentUserProgress 
 } from '../controllers/userProgress.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
-import { autoResolveUserId } from '../middleware/userIdResolver.middleware.js';
 
 const router = Router();
 
-// Wszystkie endpointy wymagają autentykacji + auto-resolve userId
-router.get('/:userId', verifyToken, autoResolveUserId, getUserProgress);
+// GET /api/user-progress/me - postęp zalogowanego użytkownika
+router.get('/me', verifyToken, getCurrentUserProgress);
+
+// PUT /api/user-progress/me - aktualizacja postępu zalogowanego użytkownika
+router.put('/me', verifyToken, updateCurrentUserProgress);
+
+// DELETE /api/user-progress/me - usunięcie postępu zalogowanego użytkownika
+router.delete('/me', verifyToken, deleteCurrentUserProgress);
+
+// POST /api/user-progress - utworzenie postępu (może być dla dowolnego użytkownika - admin?)
 router.post('/', verifyToken, createUserProgress);
-router.put('/:userId', verifyToken, autoResolveUserId, updateUserProgress);
-router.delete('/:userId', verifyToken, autoResolveUserId, deleteUserProgress);
 
 export default router;

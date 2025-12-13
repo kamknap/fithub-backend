@@ -1,28 +1,31 @@
 import { DailyNutrition } from '../models/DailyNutrition.js';
 import { Food } from '../models/Foods.js';
 import { UserGoal } from '../models/UserGoal.js';
-import { resolveUserId } from '../utils/idResolver.js';
+import { User } from '../models/User.js';
 
-export async function getDailyNutrition(req, res, next) {
+// GET /api/daily-nutrition/me/:date - dzienna dieta zalogowanego użytkownika
+export async function getCurrentUserDailyNutrition(req, res, next) {
   try {
-    const { userId, date } = req.params;
+    const { date } = req.params;
     
-    // Konwertuj Firebase UID na MongoDB ObjectId jeśli potrzeba
-    const resolvedUserId = await resolveUserId(userId);
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
     
-    if (!resolvedUserId) {
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
     
-    const nutrition = await DailyNutrition.findOne({ userId: resolvedUserId, date })
+    const nutrition = await DailyNutrition.findOne({ userId: user._id, date })
       .populate('meals.foods.foodId');
     
     if (!nutrition) {
-      const activeGoal = await UserGoal.findOne({ userId, status: 'active' });
+      const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
       const calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
       
       return res.json({
-        userId,
+        userId: user._id,
         date,
         meals: [],
         dailyTotals: { calorieGoal, calorieEaten: 0 },
@@ -34,21 +37,31 @@ export async function getDailyNutrition(req, res, next) {
   } catch (e) { next(e); }
 }
 
-export async function addMeal(req, res, next) {
+// POST /api/daily-nutrition/me/:date/meal - dodaj posiłek dla zalogowanego użytkownika
+export async function addMealForCurrentUser(req, res, next) {
   try {
-    const { userId, date } = req.params;
+    const { date } = req.params;
     const { meal } = req.body;
+
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
 
     const mealCalories = await calculateMealCalories(meal.foods);
 
-    let nutrition = await DailyNutrition.findOne({ userId, date }); // userId już zresolved przez middleware
+    let nutrition = await DailyNutrition.findOne({ userId: user._id, date });
     
     if (!nutrition) {
-      const activeGoal = await UserGoal.findOne({ userId, status: 'active' });
+      const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
       const calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
       
       nutrition = new DailyNutrition({
-        userId,
+        userId: user._id,
         date,
         meals: [],
         dailyTotals: { calorieGoal, calorieEaten: 0 }
@@ -66,11 +79,21 @@ export async function addMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-export async function deleteMeal(req, res, next) {
+// DELETE /api/daily-nutrition/me/:date/meal/:mealIndex - usuń posiłek dla zalogowanego użytkownika
+export async function deleteMealForCurrentUser(req, res, next) {
   try {
-    const { userId, date, mealIndex } = req.params;
+    const { date, mealIndex } = req.params;
     
-    const nutrition = await DailyNutrition.findOne({ userId, date });
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    const nutrition = await DailyNutrition.findOne({ userId: user._id, date });
     if (!nutrition) {
       return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
     }
@@ -93,11 +116,21 @@ export async function deleteMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-export async function deleteFoodFromMeal(req, res, next) {
+// DELETE /api/daily-nutrition/me/:date/meal/:mealIndex/food/:foodIndex
+export async function deleteFoodFromMealForCurrentUser(req, res, next) {
   try {
-    const { userId, date, mealIndex, foodIndex } = req.params;
+    const { date, mealIndex, foodIndex } = req.params;
     
-    const nutrition = await DailyNutrition.findOne({ userId, date });
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    const nutrition = await DailyNutrition.findOne({ userId: user._id, date });
     if (!nutrition) {
       return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
     }
@@ -129,11 +162,21 @@ export async function deleteFoodFromMeal(req, res, next) {
   } catch (e) { next(e); }
 }
 
-export async function deleteFoodByItemId(req, res, next) {
+// DELETE /api/daily-nutrition/me/:date/food/:itemId
+export async function deleteFoodByItemIdForCurrentUser(req, res, next) {
   try {
-    const { userId, date, itemId } = req.params;
+    const { date, itemId } = req.params;
     
-    const nutrition = await DailyNutrition.findOne({ userId, date });
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+    
+    const nutrition = await DailyNutrition.findOne({ userId: user._id, date });
     if (!nutrition) {
       return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
     }
@@ -173,16 +216,26 @@ export async function deleteFoodByItemId(req, res, next) {
   } catch (e) { next(e); }
 }
 
-export async function updateFoodQuantity(req, res, next) {
+// PUT /api/daily-nutrition/me/:date/food/:itemId
+export async function updateFoodQuantityForCurrentUser(req, res, next) {
   try {
-    const { userId, date, itemId } = req.params;
+    const { date, itemId } = req.params;
     const { quantity } = req.body;
     
     if (quantity == null || quantity <= 0) {
       return res.status(400).json({ message: 'quantity jest wymagane i musi być większe od 0' });
     }
 
-    const nutrition = await DailyNutrition.findOne({ userId, date });
+    // Pobierz Firebase UID z tokenu
+    const firebaseUid = req.user.uid;
+    
+    // Znajdź użytkownika po Firebase UID
+    const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
+    }
+
+    const nutrition = await DailyNutrition.findOne({ userId: user._id, date });
     if (!nutrition) {
       return res.status(404).json({ message: 'Dziennik nie został znaleziony' });
     }
