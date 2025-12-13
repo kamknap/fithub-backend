@@ -1,6 +1,6 @@
 {
   "name": "fithub-backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Backend API dla aplikacji FitHub (Express + MongoDB)",
   "type": "module",
   "main": "src/server.js",
