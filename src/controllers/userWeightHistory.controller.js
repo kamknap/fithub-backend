@@ -1,13 +1,10 @@
 import { UserWeightHistory } from '../models/UserWeightHistory.js';
 import { User } from '../models/User.js';
 
-// GET /api/user-weight-history/me - historia wagi zalogowanego użytkownika
 export async function getCurrentUserWeightHistory(req, res, next) {
   try {
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -22,15 +19,12 @@ export async function getCurrentUserWeightHistory(req, res, next) {
   }
 }
 
-// POST /api/user-weight-history/me - dodaj pomiar wagi dla zalogowanego użytkownika
 export async function createCurrentUserWeightMeasurement(req, res, next) {
   try {
     const { weightKg, measuredAt } = req.body;
 
-    // BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -54,7 +48,6 @@ export async function createCurrentUserWeightMeasurement(req, res, next) {
   }
 }
 
-// Stara funkcja (może być używana przez admina)
 export async function createWeightMeasurement(req, res, next) {
   try {
     const { userId, weightKg, measuredAt } = req.body;

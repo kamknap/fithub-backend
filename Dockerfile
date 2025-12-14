@@ -10,7 +10,6 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# użytkownik bez uprawnień root dla bezpieczeństwa
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 

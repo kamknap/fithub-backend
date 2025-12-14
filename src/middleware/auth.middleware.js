@@ -1,17 +1,7 @@
 import { admin } from '../config/firebase.config.js';
 
-/**
- * Middleware weryfikujący token Firebase Authorization
- * Wymaga headera: Authorization: Bearer <firebase_id_token>
- * 
- * Po pomyślnej weryfikacji dodaje do req.user:
- * - uid: Firebase UID użytkownika
- * - email: email użytkownika (jeśli dostępny)
- * - inne właściwości z decoded token
- */
 export async function verifyToken(req, res, next) {
   try {
-    // Pobierz token z headera Authorization
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -28,17 +18,14 @@ export async function verifyToken(req, res, next) {
       });
     }
 
-    // Weryfikuj token Firebase
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Dodaj zdekodowane dane użytkownika do request
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
       emailVerified: decodedToken.email_verified,
       name: decodedToken.name,
       picture: decodedToken.picture,
-      // Dodaj cały decoded token dla dodatkowych informacji
       ...decodedToken
     };
 
@@ -47,7 +34,6 @@ export async function verifyToken(req, res, next) {
   } catch (error) {
     console.error('[Auth] Token verification failed:', error.message);
     
-    // Różne typy błędów Firebase Auth
     if (error.code === 'auth/id-token-expired') {
       return res.status(401).json({ 
         message: 'Token wygasł. Zaloguj się ponownie.',

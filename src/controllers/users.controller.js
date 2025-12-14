@@ -93,7 +93,6 @@ photos: []
 
 res.status(201).json(user);
 } catch (e) {
-if (e.code === 11000) return res.status(409).json({ message: 'username already exists' });
 next(e);
 }
 }

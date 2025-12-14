@@ -10,7 +10,6 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Wszystkie endpointy wymagają autentykacji
 router.get('/', verifyToken, listPhotos);
 router.get('/:id', verifyToken, getPhotoById);
 router.post('/', verifyToken, createPhoto);

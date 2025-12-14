@@ -1,13 +1,10 @@
 import { UserProgress } from '../models/UserProgress.js';
 import { User } from '../models/User.js';
 
-// GET /api/user-progress/me - postęp zalogowanego użytkownika
 export async function getCurrentUserProgress(req, res, next) {
   try {
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -15,7 +12,6 @@ export async function getCurrentUserProgress(req, res, next) {
 
     let progress = await UserProgress.findOne({ userId: user._id });
 
-    // Jeśli postęp nie istnieje, utwórz go automatycznie z domyślnymi wartościami
     if (!progress) {
       progress = await UserProgress.create({
         userId: user._id,
@@ -45,15 +41,12 @@ export async function getCurrentUserProgress(req, res, next) {
   }
 }
 
-// POST /api/user-progress/me - utworzenie postępu dla zalogowanego użytkownika
 export async function createCurrentUserProgress(req, res, next) {
   try {
     const { level, currentPoints, totalPoints, pointsToNextLevel, lastLoginDate, loginStreak, badges, completedChallenges, activeChallenges, statistics, photos } = req.body;
 
-    // BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -125,7 +118,6 @@ export async function createUserProgress(req, res, next) {
   }
 }
 
-// PUT /api/user-progress/me - aktualizacja postępu zalogowanego użytkownika
 export async function updateCurrentUserProgress(req, res, next) {
   try {
     const updateData = req.body;
@@ -140,10 +132,8 @@ export async function updateCurrentUserProgress(req, res, next) {
       }
     }
 
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -165,13 +155,10 @@ export async function updateCurrentUserProgress(req, res, next) {
   }
 }
 
-// DELETE /api/user-progress/me - usunięcie postępu zalogowanego użytkownika
 export async function deleteCurrentUserProgress(req, res, next) {
   try {
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });

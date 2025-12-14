@@ -216,7 +216,6 @@ export async function deleteFoodByItemIdForCurrentUser(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// PUT /api/daily-nutrition/me/:date/food/:itemId
 export async function updateFoodQuantityForCurrentUser(req, res, next) {
   try {
     const { date, itemId } = req.params;
@@ -226,10 +225,8 @@ export async function updateFoodQuantityForCurrentUser(req, res, next) {
       return res.status(400).json({ message: 'quantity jest wymagane i musi być większe od 0' });
     }
 
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });

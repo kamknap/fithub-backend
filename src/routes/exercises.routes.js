@@ -10,7 +10,6 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Wszystkie endpointy wymagają autentykacji
 router.get('/', verifyToken, listExercises);
 router.get('/:id', verifyToken, getExerciseById);
 router.post('/', verifyToken, createExercise);

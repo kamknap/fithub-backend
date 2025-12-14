@@ -11,7 +11,6 @@ import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Wszystkie endpointy wymagają autentykacji
 router.get('/', verifyToken, listFoods);
 router.get('/barcode/:barcode', verifyToken, getFoodByBarcode);
 router.get('/:id', verifyToken, getFoodById);

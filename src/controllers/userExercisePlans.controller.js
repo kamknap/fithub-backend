@@ -1,13 +1,10 @@
 import { UserExercisePlan } from '../models/UserExercisePlan.js';
 import { User } from '../models/User.js';
 
-// GET /api/user-exercise-plans/me - plany treningowe zalogowanego użytkownika
 export async function getCurrentUserExercisePlans(req, res, next) {
   try {
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -23,7 +20,6 @@ export async function getCurrentUserExercisePlans(req, res, next) {
   }
 }
 
-// Stara funkcja (może być używana przez admina)
 export async function getUserExercisePlans(req, res, next) {
   try {
     const { user_id } = req.query;
@@ -58,15 +54,12 @@ export async function getUserExercisePlanById(req, res, next) {
   }
 }
 
-// POST /api/user-exercise-plans/me - utworzenie planu dla zalogowanego użytkownika
 export async function createCurrentUserExercisePlan(req, res, next) {
   try {
     const { plan_name, plan_exercises } = req.body;
 
-    // BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -110,7 +103,6 @@ export async function createCurrentUserExercisePlan(req, res, next) {
   }
 }
 
-// Stara funkcja (może być używana przez admina)
 export async function createUserExercisePlan(req, res, next) {
   try {
     const { user_id, plan_name, plan_exercises } = req.body;

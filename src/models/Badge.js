@@ -4,7 +4,6 @@ const badgeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     desc: { type: String, required: true },
-    iconUrl: { type: String, required: true },
     type: { 
       type: String, 
       required: true,

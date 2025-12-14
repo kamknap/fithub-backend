@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
 {
-username: { type: String, required: true, trim: true, unique: true },
+username: { type: String, required: true, trim: true },
 auth: {
 provider: { type: String, required: true, default: 'local' },
 firebaseUid: { type: String, default: null }
