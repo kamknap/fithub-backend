@@ -3,50 +3,46 @@ import { Food } from '../models/Foods.js';
 import { UserGoal } from '../models/UserGoal.js';
 import { User } from '../models/User.js';
 
-// GET /api/daily-nutrition/me/:date - dzienna dieta zalogowanego użytkownika
 export async function getCurrentUserDailyNutrition(req, res, next) {
   try {
     const { date } = req.params;
     
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
     }
     
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    const currentCalorieGoal = activeGoal?.plan?.calorieTarget || 2000;
+    
     const nutrition = await DailyNutrition.findOne({ userId: user._id, date })
       .populate('meals.foods.foodId');
     
     if (!nutrition) {
-      const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
-      const calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
-      
       return res.json({
         userId: user._id,
         date,
         meals: [],
-        dailyTotals: { calorieGoal, calorieEaten: 0 },
+        dailyTotals: { calorieGoal: currentCalorieGoal, calorieEaten: 0 },
         notes: null
       });
     }
+    
+    nutrition.dailyTotals.calorieGoal = currentCalorieGoal;
     
     res.json(nutrition);
   } catch (e) { next(e); }
 }
 
-// POST /api/daily-nutrition/me/:date/meal - dodaj posiłek dla zalogowanego użytkownika
 export async function addMealForCurrentUser(req, res, next) {
   try {
     const { date } = req.params;
     const { meal } = req.body;
 
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -75,19 +71,19 @@ export async function addMealForCurrentUser(req, res, next) {
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
     
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    nutrition.dailyTotals.calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
+    
     res.json(nutrition);
   } catch (e) { next(e); }
 }
 
-// DELETE /api/daily-nutrition/me/:date/meal/:mealIndex - usuń posiłek dla zalogowanego użytkownika
 export async function deleteMealForCurrentUser(req, res, next) {
   try {
     const { date, mealIndex } = req.params;
     
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -112,19 +108,19 @@ export async function deleteMealForCurrentUser(req, res, next) {
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
     
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    nutrition.dailyTotals.calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
+    
     res.json(nutrition);
   } catch (e) { next(e); }
 }
 
-// DELETE /api/daily-nutrition/me/:date/meal/:mealIndex/food/:foodIndex
 export async function deleteFoodFromMealForCurrentUser(req, res, next) {
   try {
     const { date, mealIndex, foodIndex } = req.params;
     
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -158,19 +154,19 @@ export async function deleteFoodFromMealForCurrentUser(req, res, next) {
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
     
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    nutrition.dailyTotals.calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
+    
     res.json(nutrition);
   } catch (e) { next(e); }
 }
 
-// DELETE /api/daily-nutrition/me/:date/food/:itemId
 export async function deleteFoodByItemIdForCurrentUser(req, res, next) {
   try {
     const { date, itemId } = req.params;
     
-    // Pobierz Firebase UID z tokenu
     const firebaseUid = req.user.uid;
     
-    // Znajdź użytkownika po Firebase UID
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     if (!user) {
       return res.status(404).json({ message: 'Użytkownik nie został znaleziony' });
@@ -211,6 +207,9 @@ export async function deleteFoodByItemIdForCurrentUser(req, res, next) {
 
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
+    
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    nutrition.dailyTotals.calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
     
     res.json(nutrition);
   } catch (e) { next(e); }
@@ -267,6 +266,9 @@ export async function updateFoodQuantityForCurrentUser(req, res, next) {
 
     await nutrition.save();
     await nutrition.populate('meals.foods.foodId');
+    
+    const activeGoal = await UserGoal.findOne({ userId: user._id, status: 'active' });
+    nutrition.dailyTotals.calorieGoal = activeGoal?.plan?.calorieTarget || 2000;
     
     res.json(nutrition);
   } catch (e) { next(e); }
