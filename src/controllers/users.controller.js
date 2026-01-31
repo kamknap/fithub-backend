@@ -2,10 +2,42 @@ import { User } from '../models/User.js';
 import { UserWeightHistory } from '../models/UserWeightHistory.js';
 import { UserProgress } from '../models/UserProgress.js';
 
-// GET /api/users/me → dane zalogowanego użytkownika
+// POST /api/users/google-login → logowanie/rejestracja przez Google
+export async function googleLogin(req, res, next) {
+  try {
+    const { uid, email, name, picture } = req.user;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Brak adresu email w tokenie Google' });
+    }
+
+    let user = await User.findOne({ 'auth.firebaseUid': uid });
+
+    if (!user) {
+      return res.status(404).json({ 
+        message: 'Użytkownik nie istnieje. Wymagana rejestracja.',
+        requiresRegistration: true,
+        googleData: {
+          email,
+          name,
+          picture
+        }
+      });
+    }
+
+    res.status(200).json({
+      message: 'Logowanie przez Google zakończone sukcesem',
+      user
+    });
+
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    next(error);
+  }
+}
+
 export async function getCurrentUser(req, res, next) {
   try {
-    // req.user jest ustawiane przez verifyToken
     const firebaseUid = req.user.uid;
     const user = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     
@@ -19,7 +51,6 @@ export async function getCurrentUser(req, res, next) {
   }
 }
 
-// GET /api/users → lista użytkowników
 export async function listUsers(req, res, next) {
 try {
 const users = await User.find().sort({ createdAt: -1 });
@@ -27,14 +58,11 @@ res.json(users);
 } catch (e) { next(e); }
 }
 
-// Funkcje getUserById i getUserByFirebaseUid zostały usunięte.
-// Zamiast nich używaj getCurrentUser() dla endpointu /me
 
 export async function createUser(req, res, next) {
 try {
 const { username, auth, profile, computed, settings } = req.body;
 
-// BEZPIECZEŃSTWO: Pobierz Firebase UID z tokenu, nie z body
 const firebaseUidFromToken = req.user.uid;
 
 if (!username || !profile || !settings) {
@@ -51,7 +79,6 @@ return res.status(400).json({ message: 'settings.activityLevel i settings.prefer
 
 const user = await User.create({ 
 username, 
-// Nadpisz firebaseUid tym z tokenu (bezpieczne)
 auth: { 
   ...(auth || {}), 
   provider: auth?.provider || 'firebase', 
@@ -62,14 +89,12 @@ computed: computed || {},
 settings 
 });
 
-// Automatyczne tworzenie początkowych dokumentów dla nowego użytkownika
 await UserWeightHistory.create({
 userId: user._id,
 weightKg: profile.weightKg,
 measuredAt: new Date()
 });
 
-// Tworzenie pustego dokumentu UserProgress z domyślnymi wartościami
 await UserProgress.create({
 userId: user._id,
 level: 1,
@@ -84,7 +109,7 @@ activeChallenges: null,
 statistics: {
   totalMealsLogged: 0,
   totalExercisesCompleted: 0,
-  totalWeightEntries: 1, // Mamy już jeden wpis wagi
+  totalWeightEntries: 1,
   longestStreak: 1,
   weightChange: 0
 },
@@ -122,15 +147,12 @@ function removeNullUndefined(obj) {
   return cleaned;
 }
 
-// PUT /api/users/me → aktualizacja danych zalogowanego użytkownika
 export async function updateCurrentUser(req, res, next) {
   try {
-    // Pobierz Firebase UID z tokenu (ustalonego przez verifyToken)
     const firebaseUid = req.user.uid;
     
     const updateData = removeNullUndefined(req.body);
     
-    // Znajdź użytkownika po Firebase UID
     const existingUser = await User.findOne({ 'auth.firebaseUid': firebaseUid });
     
     if (!existingUser) {
@@ -140,7 +162,6 @@ export async function updateCurrentUser(req, res, next) {
     const weightChanged = updateData.profile?.weightKg && 
                          updateData.profile.weightKg !== existingUser.profile.weightKg;
 
-    // Update używając MongoDB _id
     const user = await User.findByIdAndUpdate(existingUser._id, updateData, { new: true });
 
     if (weightChanged) {

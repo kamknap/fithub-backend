@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { listUsers, createUser, getCurrentUser, updateCurrentUser } from '../controllers/users.controller.js';
+import { listUsers, createUser, getCurrentUser, updateCurrentUser, googleLogin } from '../controllers/users.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
+
+router.post('/google-login', verifyToken, googleLogin);
 
 router.get('/me', verifyToken, getCurrentUser);
 
