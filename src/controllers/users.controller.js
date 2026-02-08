@@ -165,11 +165,30 @@ export async function updateCurrentUser(req, res, next) {
     const user = await User.findByIdAndUpdate(existingUser._id, updateData, { new: true });
 
     if (weightChanged) {
-      await UserWeightHistory.create({
+      // Zabezpieczenie przed duplikatami - sprawdź czy nie istnieje już wpis z tej samej daty
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const existingEntry = await UserWeightHistory.findOne({
         userId: user._id,
         weightKg: updateData.profile.weightKg,
-        measuredAt: new Date()
+        measuredAt: {
+          $gte: today,
+          $lt: tomorrow
+        }
       });
+
+      // Dodaj wpis tylko jeśli nie istnieje już taki sam wpis z dzisiaj
+      if (!existingEntry) {
+        await UserWeightHistory.create({
+          userId: user._id,
+          weightKg: updateData.profile.weightKg,
+          measuredAt: new Date()
+        });
+      }
     }
 
     res.json(user);
